@@ -1,0 +1,550 @@
+{
+  "detective": {
+    "id": "mansion",
+    "kind": "Detective",
+    "emoji": "🏯",
+    "titleTh": "คฤหาสน์ปริศนา",
+    "titleZh": "龙玉不见了",
+    "titlePinyin": "Lóng yù bú jiàn le",
+    "introTh": "วันนี้เป็นวันเกิดปีที่ 80 ของคุณปู่หวัง แต่หยกมังกรประจำตระกูลหายไปจากตู้กระจก! คุณคือนักสืบน้อยที่ถูกเชิญมาไขคดี ใช้ภาษาจีนเก็บเบาะแสให้ครบ แล้วหาให้ได้ว่าใครเอาหยกไป",
+    "unlockAfter": "food",
+    "culprit": "xiaolong",
+    "confession": {
+      "hanzi": "对不起！我想给朋友看看龙玉……我现在就还给爷爷！",
+      "pinyin": "Duìbuqǐ! Wǒ xiǎng gěi péngyou kànkan lóng yù…… Wǒ xiànzài jiù huán gěi yéye!",
+      "thai": "ขอโทษครับ! ผมอยากเอาหยกไปอวดเพื่อน... ผมจะคืนให้คุณปู่เดี๋ยวนี้เลย!"
+    },
+    "endingTh": "คดีปิดแล้ว! เสี่ยวหลงคืนหยกให้คุณปู่และขอโทษทุกคน คุณปู่ไม่โกรธ แต่สอนว่าจะยืมของใครต้องขออนุญาตก่อน แล้วทุกคนก็ฉลองวันเกิดกันอย่างมีความสุข 🎂",
+    "suspects": [
+      {
+        "id": "laozhang",
+        "name": "老张",
+        "namePinyin": "Lǎo Zhāng",
+        "emoji": "🤵",
+        "roleTh": "พ่อบ้าน",
+        "secret": "The butler for 30 years, loyal and a little strict. At 3 pm he was in the kitchen helping Auntie Li cook the birthday noodles. At about 3:30 he saw Xiao Long run upstairs holding something small and green. He does not know where the jade is now.",
+        "alibi": { "hanzi": "我下午三点在厨房，和李阿姨一起做饭。", "pinyin": "Wǒ xiàwǔ sān diǎn zài chúfáng, hé Lǐ āyí yìqǐ zuò fàn.", "thai": "บ่ายสามโมงผมอยู่ในครัว ทำอาหารกับป้าหลี่ครับ" },
+        "questions": [
+          {
+            "question": { "hanzi": "你下午三点在哪儿？", "pinyin": "Nǐ xiàwǔ sān diǎn zài nǎr?", "thai": "บ่ายสามโมงคุณอยู่ที่ไหน" },
+            "answer": { "hanzi": "我在厨房做饭。", "pinyin": "Wǒ zài chúfáng zuò fàn.", "thai": "ผมอยู่ในครัว ทำอาหารครับ" }
+          },
+          {
+            "question": { "hanzi": "你看见谁了？", "pinyin": "Nǐ kànjiàn shéi le?", "thai": "คุณเห็นใครบ้าง" },
+            "answer": { "hanzi": "我看见小龙跑到楼上。", "pinyin": "Wǒ kànjiàn Xiǎo Lóng pǎo dào lóushàng.", "thai": "ผมเห็นเสี่ยวหลงวิ่งขึ้นชั้นบนครับ" }
+          },
+          {
+            "question": { "hanzi": "你知道龙玉在哪儿吗？", "pinyin": "Nǐ zhīdào lóng yù zài nǎr ma?", "thai": "คุณรู้ไหมว่าหยกมังกรอยู่ที่ไหน" },
+            "answer": { "hanzi": "我不知道，对不起。", "pinyin": "Wǒ bù zhīdào, duìbuqǐ.", "thai": "ผมไม่รู้ครับ ขอโทษด้วย" }
+          }
+        ]
+      },
+      {
+        "id": "liayi",
+        "name": "李阿姨",
+        "namePinyin": "Lǐ āyí",
+        "emoji": "👩‍🍳",
+        "roleTh": "แม่ครัว",
+        "secret": "The cook. She spent the whole afternoon in the kitchen making the birthday cake and noodles together with the butler, and never left. She opened the kitchen window because it was hot, and noticed small, child-sized footprints outside it. She loves Xiao Long like her own grandson.",
+        "alibi": { "hanzi": "我一直在厨房做蛋糕，我没有出去。", "pinyin": "Wǒ yìzhí zài chúfáng zuò dàngāo, wǒ méiyǒu chūqù.", "thai": "ป้าอยู่ในครัวทำเค้กตลอด ไม่ได้ออกไปไหนเลยจ้ะ" },
+        "questions": [
+          {
+            "question": { "hanzi": "你下午在做什么？", "pinyin": "Nǐ xiàwǔ zài zuò shénme?", "thai": "ตอนบ่ายคุณทำอะไรอยู่" },
+            "answer": { "hanzi": "我在厨房做蛋糕。", "pinyin": "Wǒ zài chúfáng zuò dàngāo.", "thai": "ป้าทำเค้กอยู่ในครัวจ้ะ" }
+          },
+          {
+            "question": { "hanzi": "窗户为什么开着？", "pinyin": "Chuānghu wèishénme kāizhe?", "thai": "ทำไมหน้าต่างเปิดอยู่" },
+            "answer": { "hanzi": "因为厨房很热。窗户外面有小脚印！", "pinyin": "Yīnwèi chúfáng hěn rè. Chuānghu wàimiàn yǒu xiǎo jiǎoyìn!", "thai": "เพราะครัวร้อนจ้ะ ข้างนอกหน้าต่างมีรอยเท้าเล็ก ๆ ด้วยนะ!" }
+          },
+          {
+            "question": { "hanzi": "你喜欢小龙吗？", "pinyin": "Nǐ xǐhuan Xiǎo Lóng ma?", "thai": "คุณชอบเสี่ยวหลงไหม" },
+            "answer": { "hanzi": "喜欢！他是好孩子。", "pinyin": "Xǐhuan! Tā shì hǎo háizi.", "thai": "ชอบสิ เขาเป็นเด็กดีนะ" }
+          }
+        ]
+      },
+      {
+        "id": "xiaolong",
+        "name": "小龙",
+        "namePinyin": "Xiǎo Lóng",
+        "emoji": "👦",
+        "roleTh": "หลานชาย อายุ 10 ขวบ",
+        "secret": "Grandpa Wang's 10-year-old grandson. At 3:30 he secretly borrowed the jade to show his friends in the garden, because they did not believe his family has a dragon jade. The jade is now in his school bag upstairs. He is nervous and tries to hide it: he says he was in his room playing on his phone, but his red sneakers are muddy from the garden. If asked about the jade or his bag he says 'nothing' and changes the subject. He never confesses by himself.",
+        "alibi": { "hanzi": "我……我在房间玩手机。", "pinyin": "Wǒ…… wǒ zài fángjiān wán shǒujī.", "thai": "ผม... ผมเล่นมือถืออยู่ในห้องครับ" },
+        "questions": [
+          {
+            "question": { "hanzi": "你下午在哪儿？", "pinyin": "Nǐ xiàwǔ zài nǎr?", "thai": "ตอนบ่ายเธออยู่ที่ไหน" },
+            "answer": { "hanzi": "我……我在房间玩手机。", "pinyin": "Wǒ…… wǒ zài fángjiān wán shǒujī.", "thai": "ผม... ผมเล่นมือถืออยู่ในห้องครับ" }
+          },
+          {
+            "question": { "hanzi": "你的鞋为什么很脏？", "pinyin": "Nǐ de xié wèishénme hěn zāng?", "thai": "ทำไมรองเท้าของเธอสกปรก" },
+            "answer": { "hanzi": "因为……我去了花园。", "pinyin": "Yīnwèi…… wǒ qù le huāyuán.", "thai": "เพราะ... ผมไปสวนมาครับ" }
+          },
+          {
+            "question": { "hanzi": "你的书包里有什么？", "pinyin": "Nǐ de shūbāo li yǒu shénme?", "thai": "ในกระเป๋านักเรียนของเธอมีอะไร" },
+            "answer": { "hanzi": "没……没什么！只有书。", "pinyin": "Méi…… méi shénme! Zhǐ yǒu shū.", "thai": "ไม่... ไม่มีอะไรครับ! มีแต่หนังสือ" }
+          }
+        ]
+      }
+    ],
+    "scenes": [
+      {
+        "type": "find",
+        "titleTh": "หน้าคฤหาสน์",
+        "titleZh": "大门外",
+        "titlePinyin": "dà mén wài",
+        "emoji": "🏡",
+        "introTh": "สำรวจหน้าคฤหาสน์ ฟังคำจีนแล้วแตะสิ่งของให้ถูก บางอย่างอาจเป็นเบาะแสสำคัญ!",
+        "words": [
+          { "hanzi": "门", "pinyin": "mén", "thai": "ประตู", "emoji": "🚪", "english": "door" },
+          { "hanzi": "窗户", "pinyin": "chuānghu", "thai": "หน้าต่าง", "emoji": "🪟", "english": "window" },
+          { "hanzi": "花", "pinyin": "huā", "thai": "ดอกไม้", "emoji": "🌸", "english": "flower" },
+          { "hanzi": "树", "pinyin": "shù", "thai": "ต้นไม้", "emoji": "🌳", "english": "tree" },
+          { "hanzi": "车", "pinyin": "chē", "thai": "รถ", "emoji": "🚗", "english": "car" },
+          { "hanzi": "狗", "pinyin": "gǒu", "thai": "สุนัข", "emoji": "🐕", "english": "dog" },
+          { "hanzi": "鞋", "pinyin": "xié", "thai": "รองเท้า", "emoji": "👟", "english": "shoe" },
+          { "hanzi": "脚印", "pinyin": "jiǎoyìn", "thai": "รอยเท้า", "emoji": "👣", "english": "footprint" }
+        ],
+        "targets": [
+          { "hanzi": "门" },
+          { "hanzi": "狗", "clueTh": "สุนัขเฝ้าบ้านไม่เห่าเลย แปลว่าคนที่เข้าออกบ้านเป็นคนที่มันรู้จัก" },
+          { "hanzi": "窗户", "clueTh": "หน้าต่างห้องครัวเปิดทิ้งไว้" },
+          { "hanzi": "脚印", "clueTh": "ใต้หน้าต่างมีรอยเท้าเล็ก ๆ เหมือนรอยเท้าเด็ก!" },
+          { "hanzi": "花" },
+          { "hanzi": "鞋", "clueTh": "มีรองเท้าผ้าใบสีแดงไซซ์เด็ก เปื้อนดินจากสวน วางอยู่ข้างประตู" }
+        ]
+      },
+      {
+        "type": "dialogue",
+        "titleTh": "ห้องโถง",
+        "titleZh": "大厅",
+        "titlePinyin": "dàtīng",
+        "emoji": "🛋️",
+        "introTh": "พ่อบ้านเหล่าจางรออยู่ในห้องโถง เลือกคำถามภาษาจีนที่เหมาะที่สุดเพื่อสอบปากคำเขา",
+        "words": [
+          { "hanzi": "下午", "pinyin": "xiàwǔ", "thai": "ตอนบ่าย", "emoji": "🌤️", "english": "afternoon" },
+          { "hanzi": "厨房", "pinyin": "chúfáng", "thai": "ห้องครัว", "emoji": "🍳", "english": "kitchen" },
+          { "hanzi": "楼上", "pinyin": "lóushàng", "thai": "ชั้นบน", "emoji": "🪜", "english": "upstairs" },
+          { "hanzi": "看见", "pinyin": "kànjiàn", "thai": "เห็น", "emoji": "👀", "english": "to see" },
+          { "hanzi": "跑", "pinyin": "pǎo", "thai": "วิ่ง", "emoji": "🏃", "english": "to run" },
+          { "hanzi": "绿色", "pinyin": "lǜsè", "thai": "สีเขียว", "emoji": "🟢", "english": "green" },
+          { "hanzi": "东西", "pinyin": "dōngxi", "thai": "สิ่งของ", "emoji": "📦", "english": "thing" }
+        ],
+        "npc": { "name": "老张", "namePinyin": "Lǎo Zhāng", "emoji": "🤵", "roleTh": "พ่อบ้าน" },
+        "turns": [
+          {
+            "npc": { "hanzi": "你好，侦探！我是老张。", "pinyin": "Nǐ hǎo, zhēntàn! Wǒ shì Lǎo Zhāng.", "thai": "สวัสดีครับนักสืบ! ผมคือเหล่าจาง" },
+            "options": [
+              { "hanzi": "龙玉什么时候不见了？", "pinyin": "Lóng yù shénme shíhou bú jiàn le?", "thai": "หยกหายไปตอนไหน" },
+              { "hanzi": "你喜欢吃面条吗？", "pinyin": "Nǐ xǐhuan chī miàntiáo ma?", "thai": "คุณชอบกินบะหมี่ไหม" },
+              { "hanzi": "今天星期几？", "pinyin": "Jīntiān xīngqī jǐ?", "thai": "วันนี้วันอะไร" }
+            ],
+            "answer": 0,
+            "reply": { "hanzi": "下午三点半，龙玉就不见了。", "pinyin": "Xiàwǔ sān diǎn bàn, lóng yù jiù bú jiàn le.", "thai": "บ่ายสามโมงครึ่ง หยกก็หายไปแล้วครับ" },
+            "clueTh": "หยกหายไปตอนบ่ายสามโมงครึ่ง"
+          },
+          {
+            "npc": { "hanzi": "老爷很难过。", "pinyin": "Lǎoye hěn nánguò.", "thai": "นายท่านเสียใจมากเลยครับ" },
+            "options": [
+              { "hanzi": "你几岁？", "pinyin": "Nǐ jǐ suì?", "thai": "คุณอายุกี่ขวบ" },
+              { "hanzi": "下午三点你在哪儿？", "pinyin": "Xiàwǔ sān diǎn nǐ zài nǎr?", "thai": "บ่ายสามโมงคุณอยู่ที่ไหน" },
+              { "hanzi": "这个多少钱？", "pinyin": "Zhège duōshao qián?", "thai": "อันนี้ราคาเท่าไร" }
+            ],
+            "answer": 1,
+            "reply": { "hanzi": "我在厨房，和李阿姨一起做饭。", "pinyin": "Wǒ zài chúfáng, hé Lǐ āyí yìqǐ zuò fàn.", "thai": "ผมอยู่ในครัว ทำอาหารกับป้าหลี่ครับ" },
+            "clueTh": "ตอนบ่ายสามโมง เหล่าจางกับป้าหลี่อยู่ในครัวด้วยกัน"
+          },
+          {
+            "npc": { "hanzi": "厨房的窗户是开着的。", "pinyin": "Chúfáng de chuānghu shì kāizhe de.", "thai": "หน้าต่างห้องครัวเปิดอยู่ครับ" },
+            "options": [
+              { "hanzi": "你想喝茶吗？", "pinyin": "Nǐ xiǎng hē chá ma?", "thai": "คุณอยากดื่มชาไหม" },
+              { "hanzi": "窗户很贵吗？", "pinyin": "Chuānghu hěn guì ma?", "thai": "หน้าต่างแพงไหม" },
+              { "hanzi": "你看见谁了？", "pinyin": "Nǐ kànjiàn shéi le?", "thai": "คุณเห็นใครบ้าง" }
+            ],
+            "answer": 2,
+            "reply": { "hanzi": "我看见小龙跑到楼上去了。", "pinyin": "Wǒ kànjiàn Xiǎo Lóng pǎo dào lóushàng qù le.", "thai": "ผมเห็นเสี่ยวหลงวิ่งขึ้นชั้นบนไปครับ" },
+            "clueTh": "เหล่าจางเห็นเสี่ยวหลงวิ่งขึ้นชั้นบน"
+          },
+          {
+            "npc": { "hanzi": "他手里有一个东西。", "pinyin": "Tā shǒu li yǒu yí ge dōngxi.", "thai": "ในมือเขามีของอยู่ชิ้นหนึ่งครับ" },
+            "options": [
+              { "hanzi": "是什么颜色的？", "pinyin": "Shì shénme yánsè de?", "thai": "เป็นสีอะไร" },
+              { "hanzi": "他是中国人吗？", "pinyin": "Tā shì Zhōngguó rén ma?", "thai": "เขาเป็นคนจีนไหม" },
+              { "hanzi": "你家有几口人？", "pinyin": "Nǐ jiā yǒu jǐ kǒu rén?", "thai": "ครอบครัวคุณมีกี่คน" }
+            ],
+            "answer": 0,
+            "reply": { "hanzi": "是绿色的，很小。", "pinyin": "Shì lǜsè de, hěn xiǎo.", "thai": "สีเขียว ชิ้นเล็ก ๆ ครับ" },
+            "clueTh": "ของในมือเสี่ยวหลงเป็นสีเขียวชิ้นเล็ก ๆ (หยกก็สีเขียว!)"
+          },
+          {
+            "npc": { "hanzi": "我要去工作了。", "pinyin": "Wǒ yào qù gōngzuò le.", "thai": "ผมต้องไปทำงานต่อแล้วครับ" },
+            "options": [
+              { "hanzi": "太贵了！", "pinyin": "Tài guì le!", "thai": "แพงเกินไป!" },
+              { "hanzi": "谢谢你，老张！", "pinyin": "Xièxie nǐ, Lǎo Zhāng!", "thai": "ขอบคุณครับ เหล่าจาง!" },
+              { "hanzi": "我不喜欢你。", "pinyin": "Wǒ bù xǐhuan nǐ.", "thai": "ฉันไม่ชอบคุณ" }
+            ],
+            "answer": 1,
+            "reply": { "hanzi": "不客气，加油！", "pinyin": "Bú kèqi, jiāyóu!", "thai": "ไม่เป็นไรครับ สู้ ๆ นะ!" }
+          }
+        ]
+      },
+      {
+        "type": "puzzle",
+        "titleTh": "ห้องครัว",
+        "titleZh": "厨房",
+        "titlePinyin": "chúfáng",
+        "emoji": "🍳",
+        "introTh": "ในถังขยะห้องครัวมีโน้ตที่ถูกฉีกเป็นชิ้น ๆ เรียงคำให้เป็นประโยค เพื่ออ่านข้อความลับ",
+        "words": [
+          { "hanzi": "纸条", "pinyin": "zhǐtiáo", "thai": "กระดาษโน้ต", "emoji": "📝", "english": "note" },
+          { "hanzi": "朋友", "pinyin": "péngyou", "thai": "เพื่อน", "emoji": "🧑‍🤝‍🧑", "english": "friend" },
+          { "hanzi": "花园", "pinyin": "huāyuán", "thai": "สวน", "emoji": "🌷", "english": "garden" },
+          { "hanzi": "等", "pinyin": "děng", "thai": "รอ", "emoji": "⏳", "english": "to wait" },
+          { "hanzi": "真的", "pinyin": "zhēn de", "thai": "จริง ๆ", "emoji": "❗", "english": "really" },
+          { "hanzi": "给", "pinyin": "gěi", "thai": "ให้", "emoji": "🎁", "english": "to give / for" },
+          { "hanzi": "看看", "pinyin": "kànkan", "thai": "ดูหน่อย", "emoji": "👁️", "english": "to take a look" }
+        ],
+        "sentences": [
+          { "hanzi": "我们下午在花园等你。", "pinyin": "Wǒmen xiàwǔ zài huāyuán děng nǐ.", "thai": "ตอนบ่ายพวกเรารอนายอยู่ที่สวนนะ", "tiles": ["我们", "下午", "在", "花园", "等", "你"], "distractors": ["厨房"], "tipTh": "เวลา → สถานที่ → กริยา: 下午 + 在花园 + 等你" },
+          { "hanzi": "你家真的有龙玉吗？", "pinyin": "Nǐ jiā zhēn de yǒu lóng yù ma?", "thai": "บ้านนายมีหยกมังกรจริง ๆ เหรอ", "tiles": ["你家", "真的", "有", "龙玉", "吗"], "distractors": ["没"], "tipTh": "真的 (จริง ๆ) วางไว้หน้ากริยา 有" },
+          { "hanzi": "请给我们看看。", "pinyin": "Qǐng gěi wǒmen kànkan.", "thai": "ขอให้พวกเราดูหน่อยนะ", "tiles": ["请", "给", "我们", "看看"], "distractors": ["买"], "tipTh": "给 + คน + กริยา = ทำ…ให้คนนั้น, 看看 = ดูหน่อย" },
+          { "hanzi": "我们是你的好朋友。", "pinyin": "Wǒmen shì nǐ de hǎo péngyou.", "thai": "พวกเราเป็นเพื่อนที่ดีของนาย", "tiles": ["我们", "是", "你的", "好", "朋友"], "distractors": ["很"], "tipTh": "好 + คำนาม = …ที่ดี: 好朋友 = เพื่อนที่ดี" }
+        ],
+        "clueTh": "โน้ตนี้เป็นของเพื่อน ๆ เสี่ยวหลง พวกเขาอยากเห็นหยกมังกร และนัดเสี่ยวหลงที่สวนตอนบ่าย!"
+      },
+      {
+        "type": "interrogate",
+        "titleTh": "ชั้นบน",
+        "titleZh": "楼上",
+        "titlePinyin": "lóushàng",
+        "emoji": "🪜",
+        "introTh": "ผู้ต้องสงสัยทั้ง 3 คนรออยู่ชั้นบน เลือกคนที่จะถาม แล้วถามเป็นภาษาจีนให้ครบ 5 คำถาม จากนั้นชี้ตัวว่าใครเอาหยกไป",
+        "words": [
+          { "hanzi": "侦探", "pinyin": "zhēntàn", "thai": "นักสืบ", "emoji": "🕵️", "english": "detective" },
+          { "hanzi": "龙玉", "pinyin": "lóng yù", "thai": "หยกมังกร", "emoji": "💚", "english": "dragon jade" },
+          { "hanzi": "书包", "pinyin": "shūbāo", "thai": "กระเป๋านักเรียน", "emoji": "🎒", "english": "school bag" },
+          { "hanzi": "房间", "pinyin": "fángjiān", "thai": "ห้อง", "emoji": "🛏️", "english": "room" },
+          { "hanzi": "为什么", "pinyin": "wèishénme", "thai": "ทำไม", "emoji": "❓", "english": "why" },
+          { "hanzi": "知道", "pinyin": "zhīdào", "thai": "รู้", "emoji": "💡", "english": "to know" },
+          { "hanzi": "脏", "pinyin": "zāng", "thai": "สกปรก", "emoji": "🟤", "english": "dirty" }
+        ],
+        "requiredQuestions": 5
+      }
+    ]
+  },
+  "careers": [
+    {
+      "id": "doctor",
+      "kind": "Career",
+      "emoji": "👩‍⚕️",
+      "titleTh": "หมอ",
+      "titleZh": "医生",
+      "titlePinyin": "yīshēng",
+      "introTh": "คลินิกหมอน้อยเปิดแล้ว! เรียนศัพท์ที่หมอต้องใช้ เข้ากะดูแลคนไข้ แล้วไต่เต้าจนเป็นหมอประจำคลินิก",
+      "unlockAfter": "numbers",
+      "ranks": ["นักศึกษาแพทย์", "หมอฝึกหัด", "หมอประจำคลินิก"],
+      "scenes": [
+        {
+          "type": "training",
+          "titleTh": "อบรมหมอใหม่",
+          "titleZh": "培训",
+          "titlePinyin": "péixùn",
+          "emoji": "📚",
+          "introTh": "ก่อนเข้ากะ มาเรียนศัพท์ที่หมอต้องใช้กันก่อน ฟัง พูดตาม แล้วทำแบบทดสอบฟังเสียง",
+          "words": [
+            { "hanzi": "医生", "pinyin": "yīshēng", "thai": "หมอ", "emoji": "👩‍⚕️", "english": "doctor" },
+            { "hanzi": "病人", "pinyin": "bìngrén", "thai": "คนไข้", "emoji": "🤒", "english": "patient" },
+            { "hanzi": "头疼", "pinyin": "tóuténg", "thai": "ปวดหัว", "emoji": "🤕", "english": "headache" },
+            { "hanzi": "肚子疼", "pinyin": "dùzi téng", "thai": "ปวดท้อง", "emoji": "🤢", "english": "stomachache" },
+            { "hanzi": "发烧", "pinyin": "fāshāo", "thai": "มีไข้", "emoji": "🌡️", "english": "to have a fever" },
+            { "hanzi": "咳嗽", "pinyin": "késou", "thai": "ไอ", "emoji": "😷", "english": "to cough" },
+            { "hanzi": "药", "pinyin": "yào", "thai": "ยา", "emoji": "💊", "english": "medicine" },
+            { "hanzi": "休息", "pinyin": "xiūxi", "thai": "พักผ่อน", "emoji": "🛌", "english": "to rest" }
+          ]
+        },
+        {
+          "type": "dialogue",
+          "titleTh": "เข้ากะตรวจคนไข้",
+          "titleZh": "看病",
+          "titlePinyin": "kànbìng",
+          "emoji": "🏥",
+          "introTh": "คนไข้ทยอยเข้ามาแล้ว ฟังอาการ เลือกคำถามให้ถูก แล้วจ่ายยาให้ตรงกับอาการ",
+          "words": [
+            { "hanzi": "度", "pinyin": "dù", "thai": "องศา", "emoji": "🌡️", "english": "degree" },
+            { "hanzi": "天", "pinyin": "tiān", "thai": "วัน", "emoji": "📆", "english": "day" },
+            { "hanzi": "累", "pinyin": "lèi", "thai": "เหนื่อย", "emoji": "😩", "english": "tired" },
+            { "hanzi": "冰淇淋", "pinyin": "bīngqílín", "thai": "ไอศกรีม", "emoji": "🍦", "english": "ice cream" },
+            { "hanzi": "药膏", "pinyin": "yàogāo", "thai": "ยาทา", "emoji": "🧴", "english": "ointment" },
+            { "hanzi": "创可贴", "pinyin": "chuàngkětiē", "thai": "พลาสเตอร์ยา", "emoji": "🩹", "english": "band-aid" }
+          ],
+          "turns": [
+            {
+              "speaker": { "name": "王先生", "namePinyin": "Wáng xiānsheng", "emoji": "🧑", "roleTh": "คนไข้คนที่ 1" },
+              "npc": { "hanzi": "医生，我头疼。", "pinyin": "Yīshēng, wǒ tóuténg.", "thai": "คุณหมอครับ ผมปวดหัว" },
+              "options": [
+                { "hanzi": "你发烧吗？", "pinyin": "Nǐ fāshāo ma?", "thai": "มีไข้ไหมครับ" },
+                { "hanzi": "你想买什么？", "pinyin": "Nǐ xiǎng mǎi shénme?", "thai": "คุณอยากซื้ออะไร" },
+                { "hanzi": "你要喝咖啡吗？", "pinyin": "Nǐ yào hē kāfēi ma?", "thai": "คุณจะดื่มกาแฟไหม" }
+              ],
+              "answer": 0,
+              "reply": { "hanzi": "不发烧，就是头疼。", "pinyin": "Bù fāshāo, jiùshì tóuténg.", "thai": "ไม่มีไข้ครับ แค่ปวดหัว" },
+              "task": {
+                "promptTh": "จ่ายยาอะไรให้คุณหวังดี?",
+                "options": [
+                  { "emoji": "💊", "hanzi": "头疼药", "pinyin": "tóuténg yào", "thai": "ยาแก้ปวดหัว" },
+                  { "emoji": "🧴", "hanzi": "药膏", "pinyin": "yàogāo", "thai": "ยาทา" },
+                  { "emoji": "🩹", "hanzi": "创可贴", "pinyin": "chuàngkětiē", "thai": "พลาสเตอร์ยา" }
+                ],
+                "answer": 0
+              }
+            },
+            {
+              "speaker": { "name": "小美", "namePinyin": "Xiǎo Měi", "emoji": "👧", "roleTh": "คนไข้คนที่ 2" },
+              "npc": { "hanzi": "医生，我咳嗽。", "pinyin": "Yīshēng, wǒ késou.", "thai": "คุณหมอคะ หนูไอ" },
+              "options": [
+                { "hanzi": "你家在哪儿？", "pinyin": "Nǐ jiā zài nǎr?", "thai": "บ้านหนูอยู่ที่ไหน" },
+                { "hanzi": "你咳嗽几天了？", "pinyin": "Nǐ késou jǐ tiān le?", "thai": "ไอมากี่วันแล้ว" },
+                { "hanzi": "你喜欢小狗吗？", "pinyin": "Nǐ xǐhuan xiǎo gǒu ma?", "thai": "หนูชอบลูกสุนัขไหม" }
+              ],
+              "answer": 1,
+              "reply": { "hanzi": "咳嗽两天了。", "pinyin": "Késou liǎng tiān le.", "thai": "ไอมาสองวันแล้วค่ะ" },
+              "task": {
+                "promptTh": "จ่ายยาอะไรให้เสี่ยวเหม่ยดี?",
+                "options": [
+                  { "emoji": "🩹", "hanzi": "创可贴", "pinyin": "chuàngkětiē", "thai": "พลาสเตอร์ยา" },
+                  { "emoji": "🧴", "hanzi": "药膏", "pinyin": "yàogāo", "thai": "ยาทา" },
+                  { "emoji": "🍯", "hanzi": "咳嗽药", "pinyin": "késou yào", "thai": "ยาแก้ไอ" }
+                ],
+                "answer": 2
+              }
+            },
+            {
+              "speaker": { "name": "李爷爷", "namePinyin": "Lǐ yéye", "emoji": "👴", "roleTh": "คนไข้คนที่ 3" },
+              "npc": { "hanzi": "我发烧了，很累。", "pinyin": "Wǒ fāshāo le, hěn lèi.", "thai": "ปู่มีไข้ เหนื่อยมากเลย" },
+              "options": [
+                { "hanzi": "多少钱？", "pinyin": "Duōshao qián?", "thai": "ราคาเท่าไร" },
+                { "hanzi": "几点了？", "pinyin": "Jǐ diǎn le?", "thai": "กี่โมงแล้ว" },
+                { "hanzi": "多少度？", "pinyin": "Duōshao dù?", "thai": "กี่องศาครับ" }
+              ],
+              "answer": 2,
+              "reply": { "hanzi": "三十八度。", "pinyin": "Sānshíbā dù.", "thai": "38 องศา" },
+              "task": {
+                "promptTh": "แนะนำคุณปู่ว่าอะไรดี?",
+                "options": [
+                  { "emoji": "🛌", "hanzi": "多休息，多喝水", "pinyin": "duō xiūxi, duō hē shuǐ", "thai": "พักผ่อนเยอะ ๆ ดื่มน้ำเยอะ ๆ" },
+                  { "emoji": "🏃", "hanzi": "去跑步", "pinyin": "qù pǎobù", "thai": "ไปวิ่ง" },
+                  { "emoji": "🍦", "hanzi": "吃冰淇淋", "pinyin": "chī bīngqílín", "thai": "กินไอศกรีม" }
+                ],
+                "answer": 0
+              }
+            },
+            {
+              "speaker": { "name": "小刚", "namePinyin": "Xiǎo Gāng", "emoji": "👦", "roleTh": "คนไข้คนที่ 4" },
+              "npc": { "hanzi": "医生，我肚子疼。", "pinyin": "Yīshēng, wǒ dùzi téng.", "thai": "คุณหมอครับ ผมปวดท้อง" },
+              "options": [
+                { "hanzi": "你今天吃了什么？", "pinyin": "Nǐ jīntiān chī le shénme?", "thai": "วันนี้กินอะไรไปบ้าง" },
+                { "hanzi": "今天星期几？", "pinyin": "Jīntiān xīngqī jǐ?", "thai": "วันนี้วันอะไร" },
+                { "hanzi": "你有哥哥吗？", "pinyin": "Nǐ yǒu gēge ma?", "thai": "มีพี่ชายไหม" }
+              ],
+              "answer": 0,
+              "reply": { "hanzi": "我吃了很多冰淇淋。", "pinyin": "Wǒ chī le hěn duō bīngqílín.", "thai": "ผมกินไอศกรีมไปเยอะมาก" },
+              "task": {
+                "promptTh": "จ่ายยาอะไรให้เสี่ยวกังดี?",
+                "options": [
+                  { "emoji": "🍦", "hanzi": "冰淇淋", "pinyin": "bīngqílín", "thai": "ไอศกรีม" },
+                  { "emoji": "💊", "hanzi": "肚子疼药", "pinyin": "dùzi téng yào", "thai": "ยาแก้ปวดท้อง" },
+                  { "emoji": "🩹", "hanzi": "创可贴", "pinyin": "chuàngkětiē", "thai": "พลาสเตอร์ยา" }
+                ],
+                "answer": 1
+              }
+            }
+          ]
+        },
+        {
+          "type": "roleplay",
+          "titleTh": "คนไข้พิเศษ",
+          "titleZh": "特别的病人",
+          "titlePinyin": "tèbié de bìngrén",
+          "emoji": "🩺",
+          "introTh": "คุณป้าเฉินรู้สึกไม่สบาย คุณคือหมอ ตอบคำถามของคุณป้าให้ถูก 4 ใน 5 ข้อ แล้วจะได้เลื่อนเป็นหมอประจำคลินิก",
+          "words": [
+            { "hanzi": "次", "pinyin": "cì", "thai": "ครั้ง", "emoji": "🔁", "english": "times" },
+            { "hanzi": "可以", "pinyin": "kěyǐ", "thai": "ได้ (อนุญาต)", "emoji": "👌", "english": "may / can" },
+            { "hanzi": "上班", "pinyin": "shàngbān", "thai": "ไปทำงาน", "emoji": "💼", "english": "to go to work" },
+            { "hanzi": "喝水", "pinyin": "hē shuǐ", "thai": "ดื่มน้ำ", "emoji": "💧", "english": "to drink water" },
+            { "hanzi": "以后", "pinyin": "yǐhòu", "thai": "หลังจาก", "emoji": "⏭️", "english": "after" },
+            { "hanzi": "再来", "pinyin": "zài lái", "thai": "มาอีกครั้ง", "emoji": "🔄", "english": "to come again" }
+          ],
+          "boss": {
+            "name": "陈阿姨",
+            "namePinyin": "Chén āyí",
+            "emoji": "👩",
+            "roleTh": "คนไข้พิเศษ",
+            "scenarioTh": "คุณป้าเฉินปวดหัวและมีไข้นิดหน่อย คุณคือหมอ ตอบคำถามเรื่องยา การพักผ่อน และการกินดื่มให้ถูก",
+            "persona": "You are Auntie Chen, a friendly patient. The learner plays a young doctor. You have a headache and a slight fever, and you ask the doctor simple questions about medicine, rest, what you may drink and when to come back.",
+            "targetWords": ["药", "休息", "喝水", "次", "可以", "上班", "再来"],
+            "script": [
+              { "hanzi": "医生，你好！我头疼，也有点儿发烧。怎么办？", "pinyin": "Yīshēng, nǐ hǎo! Wǒ tóuténg, yě yǒudiǎnr fāshāo. Zěnme bàn?", "thai": "คุณหมอ สวัสดีค่ะ ป้าปวดหัว มีไข้นิดหน่อยด้วย ทำยังไงดีคะ", "keywords": ["药", "休息", "喝水"], "sampleHanzi": "你要吃药，多休息。", "samplePinyin": "Nǐ yào chī yào, duō xiūxi." },
+              { "hanzi": "这个药一天吃几次？", "pinyin": "Zhège yào yì tiān chī jǐ cì?", "thai": "ยานี้กินวันละกี่ครั้งคะ", "keywords": ["次"], "sampleHanzi": "一天吃三次。", "samplePinyin": "Yì tiān chī sān cì." },
+              { "hanzi": "我可以喝咖啡吗？", "pinyin": "Wǒ kěyǐ hē kāfēi ma?", "thai": "ป้าดื่มกาแฟได้ไหมคะ", "keywords": ["可以", "水", "茶"], "sampleHanzi": "不可以，你要多喝水。", "samplePinyin": "Bù kěyǐ, nǐ yào duō hē shuǐ." },
+              { "hanzi": "我明天可以去上班吗？", "pinyin": "Wǒ míngtiān kěyǐ qù shàngbān ma?", "thai": "พรุ่งนี้ป้าไปทำงานได้ไหมคะ", "keywords": ["可以", "休息"], "sampleHanzi": "不可以，你要在家休息。", "samplePinyin": "Bù kěyǐ, nǐ yào zài jiā xiūxi." },
+              { "hanzi": "谢谢医生！我什么时候再来？", "pinyin": "Xièxie yīshēng! Wǒ shénme shíhou zài lái?", "thai": "ขอบคุณค่ะคุณหมอ ป้าต้องมาอีกเมื่อไหร่คะ", "keywords": ["天", "星期", "明天", "后天", "以后"], "sampleHanzi": "三天以后再来。", "samplePinyin": "Sān tiān yǐhòu zài lái." }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "flight",
+      "kind": "Career",
+      "emoji": "🧑‍✈️",
+      "titleTh": "ลูกเรือบนเครื่องบิน",
+      "titleZh": "空乘",
+      "titlePinyin": "kōngchéng",
+      "introTh": "ยินดีต้อนรับสู่สายการบิน NiHao Air! เรียนศัพท์บนเครื่องบิน ดูแลผู้โดยสารระหว่างบินไปปักกิ่ง แล้วเลื่อนขั้นเป็นหัวหน้าลูกเรือ",
+      "unlockAfter": "numbers",
+      "ranks": ["ลูกเรือฝึกหัด", "ลูกเรือ", "หัวหน้าลูกเรือ"],
+      "scenes": [
+        {
+          "type": "training",
+          "titleTh": "อบรมลูกเรือใหม่",
+          "titleZh": "培训",
+          "titlePinyin": "péixùn",
+          "emoji": "📚",
+          "introTh": "ก่อนขึ้นเครื่อง มาเรียนศัพท์ที่ลูกเรือต้องใช้กันก่อน ฟัง พูดตาม แล้วทำแบบทดสอบฟังเสียง",
+          "words": [
+            { "hanzi": "飞机", "pinyin": "fēijī", "thai": "เครื่องบิน", "emoji": "✈️", "english": "airplane" },
+            { "hanzi": "登机牌", "pinyin": "dēngjīpái", "thai": "บัตรขึ้นเครื่อง", "emoji": "🎫", "english": "boarding pass" },
+            { "hanzi": "护照", "pinyin": "hùzhào", "thai": "หนังสือเดินทาง", "emoji": "🛂", "english": "passport" },
+            { "hanzi": "座位", "pinyin": "zuòwèi", "thai": "ที่นั่ง", "emoji": "💺", "english": "seat" },
+            { "hanzi": "安全带", "pinyin": "ānquándài", "thai": "เข็มขัดนิรภัย", "emoji": "🔗", "english": "seat belt" },
+            { "hanzi": "行李", "pinyin": "xíngli", "thai": "กระเป๋าเดินทาง", "emoji": "🧳", "english": "luggage" },
+            { "hanzi": "毯子", "pinyin": "tǎnzi", "thai": "ผ้าห่ม", "emoji": "🧣", "english": "blanket" },
+            { "hanzi": "洗手间", "pinyin": "xǐshǒujiān", "thai": "ห้องน้ำ", "emoji": "🚻", "english": "restroom" }
+          ]
+        },
+        {
+          "type": "dialogue",
+          "titleTh": "เข้ากะบนเครื่องบิน",
+          "titleZh": "在飞机上",
+          "titlePinyin": "zài fēijī shang",
+          "emoji": "🛫",
+          "introTh": "เครื่องขึ้นแล้ว! ผู้โดยสารเรียกหาคุณทีละคน ฟังให้ดี ตอบให้ถูก แล้วส่งของให้ตรงกับที่เขาต้องการ",
+          "words": [
+            { "hanzi": "冷", "pinyin": "lěng", "thai": "หนาว", "emoji": "🥶", "english": "cold" },
+            { "hanzi": "冰水", "pinyin": "bīng shuǐ", "thai": "น้ำเย็นใส่น้ำแข็ง", "emoji": "🧊", "english": "iced water" },
+            { "hanzi": "可乐", "pinyin": "kělè", "thai": "โคล่า", "emoji": "🥤", "english": "cola" },
+            { "hanzi": "还是", "pinyin": "háishi", "thai": "หรือ (ในคำถาม)", "emoji": "🔀", "english": "or" },
+            { "hanzi": "北京", "pinyin": "Běijīng", "thai": "ปักกิ่ง", "emoji": "🏙️", "english": "Beijing" },
+            { "hanzi": "到", "pinyin": "dào", "thai": "ถึง", "emoji": "🛬", "english": "to arrive" },
+            { "hanzi": "您", "pinyin": "nín", "thai": "คุณ (สุภาพ)", "emoji": "🙇", "english": "you (polite)" }
+          ],
+          "turns": [
+            {
+              "speaker": { "name": "张先生", "namePinyin": "Zhāng xiānsheng", "emoji": "👨", "roleTh": "ผู้โดยสารที่นั่ง 12A" },
+              "npc": { "hanzi": "你好，我有点儿冷。", "pinyin": "Nǐ hǎo, wǒ yǒudiǎnr lěng.", "thai": "สวัสดีครับ ผมรู้สึกหนาวนิดหน่อย" },
+              "options": [
+                { "hanzi": "您要冰水吗？", "pinyin": "Nín yào bīng shuǐ ma?", "thai": "รับน้ำเย็นใส่น้ำแข็งไหมคะ" },
+                { "hanzi": "您要毯子吗？", "pinyin": "Nín yào tǎnzi ma?", "thai": "รับผ้าห่มไหมคะ" },
+                { "hanzi": "您几岁？", "pinyin": "Nín jǐ suì?", "thai": "คุณอายุกี่ขวบ" }
+              ],
+              "answer": 1,
+              "reply": { "hanzi": "要，谢谢！", "pinyin": "Yào, xièxie!", "thai": "เอาครับ ขอบคุณ!" },
+              "task": {
+                "promptTh": "ส่งอะไรให้คุณจางดี?",
+                "options": [
+                  { "emoji": "🧊", "hanzi": "冰水", "pinyin": "bīng shuǐ", "thai": "น้ำเย็นใส่น้ำแข็ง" },
+                  { "emoji": "🧳", "hanzi": "行李", "pinyin": "xíngli", "thai": "กระเป๋าเดินทาง" },
+                  { "emoji": "🧣", "hanzi": "毯子", "pinyin": "tǎnzi", "thai": "ผ้าห่ม" }
+                ],
+                "answer": 2
+              }
+            },
+            {
+              "speaker": { "name": "王小姐", "namePinyin": "Wáng xiǎojiě", "emoji": "👩", "roleTh": "ผู้โดยสารที่นั่ง 15C" },
+              "npc": { "hanzi": "请问，洗手间在哪儿？", "pinyin": "Qǐngwèn, xǐshǒujiān zài nǎr?", "thai": "ขอถามหน่อยค่ะ ห้องน้ำอยู่ที่ไหน" },
+              "options": [
+                { "hanzi": "在前面，右边。", "pinyin": "Zài qiánmiàn, yòubian.", "thai": "อยู่ข้างหน้า ทางขวาค่ะ" },
+                { "hanzi": "在厨房。", "pinyin": "Zài chúfáng.", "thai": "อยู่ในครัว" },
+                { "hanzi": "我不知道。", "pinyin": "Wǒ bù zhīdào.", "thai": "ฉันไม่รู้" }
+              ],
+              "answer": 0,
+              "reply": { "hanzi": "好的，谢谢你！", "pinyin": "Hǎo de, xièxie nǐ!", "thai": "ได้ค่ะ ขอบคุณนะ!" }
+            },
+            {
+              "speaker": { "name": "刘爷爷", "namePinyin": "Liú yéye", "emoji": "👴", "roleTh": "ผู้โดยสารที่นั่ง 20B" },
+              "npc": { "hanzi": "我想喝点儿东西。", "pinyin": "Wǒ xiǎng hē diǎnr dōngxi.", "thai": "ปู่อยากดื่มอะไรสักหน่อย" },
+              "options": [
+                { "hanzi": "您想买衣服吗？", "pinyin": "Nín xiǎng mǎi yīfu ma?", "thai": "อยากซื้อเสื้อผ้าไหมคะ" },
+                { "hanzi": "您想喝茶还是咖啡？", "pinyin": "Nín xiǎng hē chá háishi kāfēi?", "thai": "รับชาหรือกาแฟดีคะ" },
+                { "hanzi": "您的护照呢？", "pinyin": "Nín de hùzhào ne?", "thai": "หนังสือเดินทางของคุณล่ะ" }
+              ],
+              "answer": 1,
+              "reply": { "hanzi": "我要一杯茶，谢谢。", "pinyin": "Wǒ yào yì bēi chá, xièxie.", "thai": "ขอชาหนึ่งแก้ว ขอบคุณนะ" },
+              "task": {
+                "promptTh": "ส่งเครื่องดื่มอะไรให้คุณปู่หลิวดี?",
+                "options": [
+                  { "emoji": "☕", "hanzi": "咖啡", "pinyin": "kāfēi", "thai": "กาแฟ" },
+                  { "emoji": "🍵", "hanzi": "茶", "pinyin": "chá", "thai": "ชา" },
+                  { "emoji": "🥤", "hanzi": "可乐", "pinyin": "kělè", "thai": "โคล่า" }
+                ],
+                "answer": 1
+              }
+            },
+            {
+              "speaker": { "name": "小安", "namePinyin": "Xiǎo Ān", "emoji": "🧒", "roleTh": "ผู้โดยสารตัวน้อย" },
+              "npc": { "hanzi": "飞机什么时候到北京？", "pinyin": "Fēijī shénme shíhou dào Běijīng?", "thai": "เครื่องบินจะถึงปักกิ่งเมื่อไหร่ครับ" },
+              "options": [
+                { "hanzi": "三块钱。", "pinyin": "Sān kuài qián.", "thai": "สามหยวน" },
+                { "hanzi": "在左边。", "pinyin": "Zài zuǒbian.", "thai": "อยู่ทางซ้าย" },
+                { "hanzi": "下午三点到。", "pinyin": "Xiàwǔ sān diǎn dào.", "thai": "ถึงบ่ายสามโมงจ้ะ" }
+              ],
+              "answer": 2,
+              "reply": { "hanzi": "太好了！", "pinyin": "Tài hǎo le!", "thai": "เยี่ยมเลย!" },
+              "task": {
+                "promptTh": "ก่อนเครื่องลง ต้องบอกผู้โดยสารให้ทำอะไร?",
+                "options": [
+                  { "emoji": "🔗", "hanzi": "系好安全带", "pinyin": "jì hǎo ānquándài", "thai": "คาดเข็มขัดนิรภัย" },
+                  { "emoji": "🚻", "hanzi": "去洗手间", "pinyin": "qù xǐshǒujiān", "thai": "ไปห้องน้ำ" },
+                  { "emoji": "🧳", "hanzi": "拿行李", "pinyin": "ná xíngli", "thai": "หยิบกระเป๋า" }
+                ],
+                "answer": 0
+              }
+            }
+          ]
+        },
+        {
+          "type": "roleplay",
+          "titleTh": "ผู้โดยสารคนสำคัญ",
+          "titleZh": "重要的旅客",
+          "titlePinyin": "zhòngyào de lǚkè",
+          "emoji": "🌟",
+          "introTh": "คุณหลิวผู้โดยสารชั้นธุรกิจมีคำขอหลายอย่าง ตอบให้ถูก 4 ใน 5 ข้อ แล้วจะได้เลื่อนเป็นหัวหน้าลูกเรือ",
+          "words": [
+            { "hanzi": "放", "pinyin": "fàng", "thai": "วาง", "emoji": "📥", "english": "to put" },
+            { "hanzi": "上面", "pinyin": "shàngmiàn", "thai": "ข้างบน", "emoji": "⬆️", "english": "above" },
+            { "hanzi": "吃的", "pinyin": "chī de", "thai": "ของกิน", "emoji": "🍱", "english": "food" },
+            { "hanzi": "这儿", "pinyin": "zhèr", "thai": "ที่นี่", "emoji": "📍", "english": "here" },
+            { "hanzi": "给您", "pinyin": "gěi nín", "thai": "นี่ค่ะ/ให้คุณ", "emoji": "🤲", "english": "here you are" },
+            { "hanzi": "旅客", "pinyin": "lǚkè", "thai": "ผู้โดยสาร", "emoji": "🧍", "english": "passenger" }
+          ],
+          "boss": {
+            "name": "刘先生",
+            "namePinyin": "Liú xiānsheng",
+            "emoji": "👨‍💼",
+            "roleTh": "ผู้โดยสารชั้นธุรกิจ",
+            "scenarioTh": "คุณหลิวบินไปปักกิ่งและมีคำขอหลายอย่าง คุณคือลูกเรือ ตอบคำถามของเขาให้ถูกและสุภาพ",
+            "persona": "You are Mr. Liu, a polite business-class passenger on a flight to Beijing. The learner plays a flight attendant. Ask simple questions about your seat, your luggage, the food, a blanket and the arrival time.",
+            "targetWords": ["座位", "行李", "毯子", "可以", "几点", "米饭", "面条"],
+            "script": [
+              { "hanzi": "你好！我的座位在哪儿？", "pinyin": "Nǐ hǎo! Wǒ de zuòwèi zài nǎr?", "thai": "สวัสดีครับ ที่นั่งของผมอยู่ไหน", "keywords": ["在", "这儿", "前面", "后面", "左", "右"], "sampleHanzi": "您的座位在这儿。", "samplePinyin": "Nín de zuòwèi zài zhèr." },
+              { "hanzi": "我可以把行李放在这儿吗？", "pinyin": "Wǒ kěyǐ bǎ xíngli fàng zài zhèr ma?", "thai": "ผมวางกระเป๋าตรงนี้ได้ไหม", "keywords": ["可以", "上面"], "sampleHanzi": "可以，请放在上面。", "samplePinyin": "Kěyǐ, qǐng fàng zài shàngmiàn." },
+              { "hanzi": "今天有什么吃的？", "pinyin": "Jīntiān yǒu shénme chī de?", "thai": "วันนี้มีอะไรให้กินบ้าง", "keywords": ["米饭", "面条", "有"], "sampleHanzi": "有米饭和面条。", "samplePinyin": "Yǒu mǐfàn hé miàntiáo." },
+              { "hanzi": "我有点儿冷，有毯子吗？", "pinyin": "Wǒ yǒudiǎnr lěng, yǒu tǎnzi ma?", "thai": "ผมหนาวนิดหน่อย มีผ้าห่มไหม", "keywords": ["有", "毯子", "给"], "sampleHanzi": "有，给您。", "samplePinyin": "Yǒu, gěi nín." },
+              { "hanzi": "飞机几点到北京？", "pinyin": "Fēijī jǐ diǎn dào Běijīng?", "thai": "เครื่องบินถึงปักกิ่งกี่โมง", "keywords": ["点"], "sampleHanzi": "下午三点到。", "samplePinyin": "Xiàwǔ sān diǎn dào." }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

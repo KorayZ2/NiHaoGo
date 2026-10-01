@@ -1,0 +1,438 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "greeting",
+      "emoji": "👋",
+      "titleTh": "ทักทายและแนะนำตัว",
+      "titleZh": "打招呼",
+      "titlePinyin": "dǎ zhāohu",
+      "descriptionTh": "ทักทาย บอกชื่อ และบอกว่าเราเป็นใคร",
+      "words": [
+        { "hanzi": "你好", "pinyin": "nǐ hǎo", "thai": "สวัสดี", "emoji": "👋", "english": "hello" },
+        { "hanzi": "我", "pinyin": "wǒ", "thai": "ฉัน", "emoji": "🙋", "english": "I / me" },
+        { "hanzi": "你", "pinyin": "nǐ", "thai": "คุณ", "emoji": "👉", "english": "you" },
+        { "hanzi": "他", "pinyin": "tā", "thai": "เขา (ผู้ชาย)", "emoji": "👦", "english": "he / him" },
+        { "hanzi": "她", "pinyin": "tā", "thai": "เธอ (ผู้หญิง)", "emoji": "👧", "english": "she / her" },
+        { "hanzi": "叫", "pinyin": "jiào", "thai": "ชื่อว่า / เรียกว่า", "emoji": "📛", "english": "to be called" },
+        { "hanzi": "名字", "pinyin": "míngzi", "thai": "ชื่อ", "emoji": "🏷️", "english": "name" },
+        { "hanzi": "是", "pinyin": "shì", "thai": "เป็น / คือ", "emoji": "✅", "english": "to be (is / am / are)" },
+        { "hanzi": "学生", "pinyin": "xuésheng", "thai": "นักเรียน", "emoji": "🧑‍🎓", "english": "student" },
+        { "hanzi": "泰国人", "pinyin": "Tàiguó rén", "thai": "คนไทย", "emoji": "🇹🇭", "english": "Thai (person)" },
+        { "hanzi": "中国人", "pinyin": "Zhōngguó rén", "thai": "คนจีน", "emoji": "🇨🇳", "english": "Chinese (person)" },
+        { "hanzi": "谢谢", "pinyin": "xièxie", "thai": "ขอบคุณ", "emoji": "🙏", "english": "thank you" },
+        { "hanzi": "不客气", "pinyin": "bú kèqi", "thai": "ไม่เป็นไร (ตอบคำขอบคุณ)", "emoji": "😊", "english": "you're welcome" },
+        { "hanzi": "再见", "pinyin": "zàijiàn", "thai": "ลาก่อน", "emoji": "🚶", "english": "goodbye" }
+      ],
+      "sentences": [
+        { "hanzi": "我叫小明。", "pinyin": "Wǒ jiào Xiǎo Míng.", "thai": "ฉันชื่อเสี่ยวหมิง", "tiles": ["我", "叫", "小明"], "distractors": ["是"], "tipTh": "叫 + ชื่อ = ชื่อว่า…" },
+        { "hanzi": "你叫什么名字？", "pinyin": "Nǐ jiào shénme míngzi?", "thai": "คุณชื่ออะไร", "tiles": ["你", "叫", "什么", "名字"], "distractors": ["吗"], "tipTh": "คำถามภาษาจีนวาง 什么 (อะไร) ไว้ตำแหน่งเดียวกับคำตอบ ไม่ต้องย้ายไปหน้าประโยค" },
+        { "hanzi": "我是学生。", "pinyin": "Wǒ shì xuésheng.", "thai": "ฉันเป็นนักเรียน", "tiles": ["我", "是", "学生"], "distractors": ["你"], "tipTh": "A 是 B = A เป็น B" },
+        { "hanzi": "你是中国人吗？", "pinyin": "Nǐ shì Zhōngguó rén ma?", "thai": "คุณเป็นคนจีนใช่ไหม", "tiles": ["你", "是", "中国人", "吗"], "distractors": ["什么"], "tipTh": "ใส่ 吗 ท้ายประโยคบอกเล่า จะกลายเป็นคำถาม ใช่/ไม่ใช่" },
+        { "hanzi": "我不是中国人。", "pinyin": "Wǒ bú shì Zhōngguó rén.", "thai": "ฉันไม่ใช่คนจีน", "tiles": ["我", "不", "是", "中国人"], "distractors": ["吗"], "tipTh": "วาง 不 ไว้หน้ากริยาเพื่อปฏิเสธ" },
+        { "hanzi": "她是泰国人。", "pinyin": "Tā shì Tàiguó rén.", "thai": "เธอเป็นคนไทย", "tiles": ["她", "是", "泰国人"], "distractors": ["他"], "tipTh": "他 = เขา (ชาย), 她 = เธอ (หญิง) ออกเสียง tā เหมือนกัน" }
+      ],
+      "listening": [
+        { "hanzi": "你好！", "pinyin": "Nǐ hǎo!", "thai": "สวัสดี", "questionTh": "ได้ยินคำว่าอะไร", "options": ["สวัสดี", "ขอบคุณ", "ลาก่อน", "ไม่เป็นไร"], "answer": 0 },
+        { "hanzi": "谢谢！", "pinyin": "Xièxie!", "thai": "ขอบคุณ", "questionTh": "ได้ยินคำว่าอะไร", "options": ["ลาก่อน", "ขอบคุณ", "สวัสดี", "ขอโทษ"], "answer": 1 },
+        { "hanzi": "我叫小红。", "pinyin": "Wǒ jiào Xiǎo Hóng.", "thai": "ฉันชื่อเสี่ยวหง", "questionTh": "ผู้พูดชื่ออะไร", "options": ["เสี่ยวหมิง", "เสี่ยวหง", "หลี่ลี่", "หวังเฉิน"], "answer": 1 },
+        { "hanzi": "我是泰国人。", "pinyin": "Wǒ shì Tàiguó rén.", "thai": "ฉันเป็นคนไทย", "questionTh": "ผู้พูดเป็นคนชาติอะไร", "options": ["คนจีน", "คนญี่ปุ่น", "คนไทย", "คนเกาหลี"], "answer": 2 },
+        { "hanzi": "他是学生吗？", "pinyin": "Tā shì xuésheng ma?", "thai": "เขาเป็นนักเรียนไหม", "questionTh": "ประโยคนี้ถามว่าอะไร", "options": ["เขาชื่ออะไร", "เขาเป็นนักเรียนไหม", "เขาเป็นคนจีนไหม", "เขาอยู่ที่ไหน"], "answer": 1 }
+      ],
+      "boss": {
+        "name": "小明",
+        "namePinyin": "Xiǎo Míng",
+        "emoji": "🧒",
+        "roleTh": "เพื่อนใหม่ในห้องเรียน",
+        "scenarioTh": "วันแรกของการเปิดเทอม เสี่ยวหมิงเดินมาทักทายคุณ ลองคุยกับเขาให้รู้จักกัน",
+        "persona": "You are Xiao Ming, a friendly 12-year-old Chinese student meeting the learner (a Thai student) on the first day of school.",
+        "targetWords": ["你好", "叫", "名字", "是", "学生", "泰国人", "谢谢", "再见"],
+        "script": [
+          { "hanzi": "你好！我叫小明。你叫什么名字？", "pinyin": "Nǐ hǎo! Wǒ jiào Xiǎo Míng. Nǐ jiào shénme míngzi?", "thai": "สวัสดี ฉันชื่อเสี่ยวหมิง คุณชื่ออะไร", "keywords": ["叫", "名字", "我是"], "sampleHanzi": "我叫小美。", "samplePinyin": "Wǒ jiào Xiǎo Měi." },
+          { "hanzi": "你是中国人吗？", "pinyin": "Nǐ shì Zhōngguó rén ma?", "thai": "คุณเป็นคนจีนใช่ไหม", "keywords": ["泰国", "中国", "不是"], "sampleHanzi": "我不是中国人，我是泰国人。", "samplePinyin": "Wǒ bú shì Zhōngguó rén, wǒ shì Tàiguó rén." },
+          { "hanzi": "你是学生吗？", "pinyin": "Nǐ shì xuésheng ma?", "thai": "คุณเป็นนักเรียนไหม", "keywords": ["学生"], "sampleHanzi": "是，我是学生。", "samplePinyin": "Shì, wǒ shì xuésheng." },
+          { "hanzi": "这个给你！", "pinyin": "Zhège gěi nǐ!", "thai": "อันนี้ให้คุณ!", "keywords": ["谢谢"], "sampleHanzi": "谢谢！", "samplePinyin": "Xièxie!" },
+          { "hanzi": "我要回家了，再见！", "pinyin": "Wǒ yào huí jiā le, zàijiàn!", "thai": "ฉันต้องกลับบ้านแล้ว ลาก่อนนะ", "keywords": ["再见", "拜拜"], "sampleHanzi": "再见！", "samplePinyin": "Zàijiàn!" }
+        ]
+      }
+    },
+    {
+      "id": "numbers",
+      "emoji": "🔢",
+      "titleTh": "ตัวเลข วัน เวลา",
+      "titleZh": "数字和时间",
+      "titlePinyin": "shùzì hé shíjiān",
+      "descriptionTh": "นับเลข บอกเวลา บอกวัน และบอกอายุ",
+      "words": [
+        { "hanzi": "一", "pinyin": "yī", "thai": "หนึ่ง", "emoji": "1️⃣", "english": "one" },
+        { "hanzi": "二", "pinyin": "èr", "thai": "สอง", "emoji": "2️⃣", "english": "two" },
+        { "hanzi": "三", "pinyin": "sān", "thai": "สาม", "emoji": "3️⃣", "english": "three" },
+        { "hanzi": "四", "pinyin": "sì", "thai": "สี่", "emoji": "4️⃣", "english": "four" },
+        { "hanzi": "五", "pinyin": "wǔ", "thai": "ห้า", "emoji": "5️⃣", "english": "five" },
+        { "hanzi": "十", "pinyin": "shí", "thai": "สิบ", "emoji": "🔟", "english": "ten" },
+        { "hanzi": "几", "pinyin": "jǐ", "thai": "กี่ (ถามจำนวน)", "emoji": "❓", "english": "how many" },
+        { "hanzi": "点", "pinyin": "diǎn", "thai": "โมง / นาฬิกา", "emoji": "🕐", "english": "o'clock" },
+        { "hanzi": "现在", "pinyin": "xiànzài", "thai": "ตอนนี้", "emoji": "⏰", "english": "now" },
+        { "hanzi": "今天", "pinyin": "jīntiān", "thai": "วันนี้", "emoji": "📅", "english": "today" },
+        { "hanzi": "明天", "pinyin": "míngtiān", "thai": "พรุ่งนี้", "emoji": "🌅", "english": "tomorrow" },
+        { "hanzi": "星期", "pinyin": "xīngqī", "thai": "สัปดาห์ / วันในสัปดาห์", "emoji": "🗓️", "english": "week / day of the week" },
+        { "hanzi": "岁", "pinyin": "suì", "thai": "ขวบ / ปี (อายุ)", "emoji": "🎂", "english": "years old" }
+      ],
+      "sentences": [
+        { "hanzi": "现在几点？", "pinyin": "Xiànzài jǐ diǎn?", "thai": "ตอนนี้กี่โมง", "tiles": ["现在", "几", "点"], "distractors": ["岁"], "tipTh": "几 ใช้ถามจำนวน วางไว้ตรงตำแหน่งตัวเลขในคำตอบ" },
+        { "hanzi": "现在三点。", "pinyin": "Xiànzài sān diǎn.", "thai": "ตอนนี้สามโมง", "tiles": ["现在", "三", "点"], "distractors": ["几"], "tipTh": "ตัวเลข + 点 = …โมง" },
+        { "hanzi": "今天星期五。", "pinyin": "Jīntiān xīngqīwǔ.", "thai": "วันนี้วันศุกร์", "tiles": ["今天", "星期", "五"], "distractors": ["明天"], "tipTh": "星期 + เลข 1–6 = วันจันทร์–เสาร์ (星期一 = วันจันทร์) และประโยคบอกวันไม่ต้องใช้ 是" },
+        { "hanzi": "明天星期六。", "pinyin": "Míngtiān xīngqīliù.", "thai": "พรุ่งนี้วันเสาร์", "tiles": ["明天", "星期", "六"], "distractors": ["今天"], "tipTh": "星期六 = วันเสาร์, 星期天 = วันอาทิตย์" },
+        { "hanzi": "你几岁？", "pinyin": "Nǐ jǐ suì?", "thai": "คุณอายุกี่ขวบ", "tiles": ["你", "几", "岁"], "distractors": ["点"], "tipTh": "ถามอายุเด็กใช้ 几岁 ส่วนผู้ใหญ่มักใช้ 多大" },
+        { "hanzi": "我十二岁。", "pinyin": "Wǒ shí'èr suì.", "thai": "ฉันอายุสิบสองขวบ", "tiles": ["我", "十二", "岁"], "distractors": ["点"], "tipTh": "เลขสองหลัก: 十 + 二 = 12 แต่ 二 + 十 = 20" }
+      ],
+      "listening": [
+        { "hanzi": "三", "pinyin": "sān", "thai": "สาม", "questionTh": "ได้ยินเลขอะไร", "options": ["1", "3", "5", "10"], "answer": 1 },
+        { "hanzi": "现在四点。", "pinyin": "Xiànzài sì diǎn.", "thai": "ตอนนี้สี่โมง", "questionTh": "ตอนนี้กี่โมง", "options": ["สี่โมง", "สิบโมง", "สามโมง", "ห้าโมง"], "answer": 0 },
+        { "hanzi": "今天星期一。", "pinyin": "Jīntiān xīngqīyī.", "thai": "วันนี้วันจันทร์", "questionTh": "วันนี้วันอะไร", "options": ["วันจันทร์", "วันอังคาร", "วันศุกร์", "วันอาทิตย์"], "answer": 0 },
+        { "hanzi": "我十岁。", "pinyin": "Wǒ shí suì.", "thai": "ฉันอายุสิบขวบ", "questionTh": "ผู้พูดอายุเท่าไร", "options": ["5 ขวบ", "10 ขวบ", "12 ขวบ", "4 ขวบ"], "answer": 1 },
+        { "hanzi": "明天见！", "pinyin": "Míngtiān jiàn!", "thai": "เจอกันพรุ่งนี้", "questionTh": "ผู้พูดหมายความว่าอะไร", "options": ["เจอกันพรุ่งนี้", "เจอกันวันนี้", "ลาก่อนตลอดไป", "ตอนนี้กี่โมง"], "answer": 0 }
+      ],
+      "boss": {
+        "name": "小红",
+        "namePinyin": "Xiǎo Hóng",
+        "emoji": "👧",
+        "roleTh": "เพื่อนสนิท",
+        "scenarioTh": "เสี่ยวหงอยากนัดคุณไปเล่นด้วยกัน ช่วยตอบเรื่องวันและเวลาให้ถูกนะ",
+        "persona": "You are Xiao Hong, a cheerful Chinese girl arranging a playdate with the learner.",
+        "targetWords": ["几", "点", "今天", "明天", "星期", "现在", "岁"],
+        "script": [
+          { "hanzi": "现在几点？", "pinyin": "Xiànzài jǐ diǎn?", "thai": "ตอนนี้กี่โมงแล้ว", "keywords": ["点"], "sampleHanzi": "现在三点。", "samplePinyin": "Xiànzài sān diǎn." },
+          { "hanzi": "今天星期几？", "pinyin": "Jīntiān xīngqī jǐ?", "thai": "วันนี้วันอะไร", "keywords": ["星期"], "sampleHanzi": "今天星期五。", "samplePinyin": "Jīntiān xīngqīwǔ." },
+          { "hanzi": "你几岁？", "pinyin": "Nǐ jǐ suì?", "thai": "คุณอายุกี่ขวบ", "keywords": ["岁"], "sampleHanzi": "我十二岁。", "samplePinyin": "Wǒ shí'èr suì." },
+          { "hanzi": "明天你有时间吗？", "pinyin": "Míngtiān nǐ yǒu shíjiān ma?", "thai": "พรุ่งนี้คุณว่างไหม", "keywords": ["有", "明天"], "sampleHanzi": "有时间。", "samplePinyin": "Yǒu shíjiān." },
+          { "hanzi": "我们明天几点见？", "pinyin": "Wǒmen míngtiān jǐ diǎn jiàn?", "thai": "พรุ่งนี้เราเจอกันกี่โมงดี", "keywords": ["点"], "sampleHanzi": "明天十点见！", "samplePinyin": "Míngtiān shí diǎn jiàn!" }
+        ]
+      }
+    },
+    {
+      "id": "family",
+      "emoji": "👨‍👩‍👧",
+      "titleTh": "ครอบครัว",
+      "titleZh": "家人",
+      "titlePinyin": "jiārén",
+      "descriptionTh": "แนะนำคนในครอบครัว และบอกว่าบ้านเรามีกี่คน",
+      "words": [
+        { "hanzi": "家", "pinyin": "jiā", "thai": "บ้าน / ครอบครัว", "emoji": "🏠", "english": "home / family" },
+        { "hanzi": "爸爸", "pinyin": "bàba", "thai": "พ่อ", "emoji": "👨", "english": "dad" },
+        { "hanzi": "妈妈", "pinyin": "māma", "thai": "แม่", "emoji": "👩", "english": "mom" },
+        { "hanzi": "哥哥", "pinyin": "gēge", "thai": "พี่ชาย", "emoji": "👦", "english": "older brother" },
+        { "hanzi": "姐姐", "pinyin": "jiějie", "thai": "พี่สาว", "emoji": "👧", "english": "older sister" },
+        { "hanzi": "弟弟", "pinyin": "dìdi", "thai": "น้องชาย", "emoji": "🧒", "english": "younger brother" },
+        { "hanzi": "妹妹", "pinyin": "mèimei", "thai": "น้องสาว", "emoji": "👶", "english": "younger sister" },
+        { "hanzi": "爷爷", "pinyin": "yéye", "thai": "ปู่", "emoji": "👴", "english": "grandpa (father's father)" },
+        { "hanzi": "奶奶", "pinyin": "nǎinai", "thai": "ย่า", "emoji": "👵", "english": "grandma (father's mother)" },
+        { "hanzi": "有", "pinyin": "yǒu", "thai": "มี", "emoji": "✋", "english": "to have" },
+        { "hanzi": "没有", "pinyin": "méiyǒu", "thai": "ไม่มี", "emoji": "🚫", "english": "not have" },
+        { "hanzi": "口", "pinyin": "kǒu", "thai": "คน (ลักษณนามนับสมาชิกครอบครัว)", "emoji": "👥", "english": "(measure word for family members)" },
+        { "hanzi": "的", "pinyin": "de", "thai": "ของ (แสดงความเป็นเจ้าของ)", "emoji": "🔗", "english": "'s / of (possessive)" }
+      ],
+      "sentences": [
+        { "hanzi": "我家有四口人。", "pinyin": "Wǒ jiā yǒu sì kǒu rén.", "thai": "ครอบครัวฉันมีสี่คน", "tiles": ["我家", "有", "四", "口", "人"], "distractors": ["个"], "tipTh": "นับจำนวนสมาชิกครอบครัวใช้ 口 เช่น 三口人 = สามคน" },
+        { "hanzi": "你家有几口人？", "pinyin": "Nǐ jiā yǒu jǐ kǒu rén?", "thai": "ครอบครัวคุณมีกี่คน", "tiles": ["你家", "有", "几", "口", "人"], "distractors": ["吗"], "tipTh": "มี 几 อยู่แล้วเป็นคำถาม จึงไม่ต้องใส่ 吗" },
+        { "hanzi": "这是我妈妈。", "pinyin": "Zhè shì wǒ māma.", "thai": "นี่คือแม่ของฉัน", "tiles": ["这", "是", "我", "妈妈"], "distractors": ["的"], "tipTh": "กับคนในครอบครัวละ 的 ได้ 我妈妈 = แม่ของฉัน" },
+        { "hanzi": "我有一个哥哥。", "pinyin": "Wǒ yǒu yí ge gēge.", "thai": "ฉันมีพี่ชายหนึ่งคน", "tiles": ["我", "有", "一", "个", "哥哥"], "distractors": ["口"], "tipTh": "นับคนทั่วไปใช้ 个: 一个哥哥 = พี่ชายหนึ่งคน" },
+        { "hanzi": "我没有妹妹。", "pinyin": "Wǒ méiyǒu mèimei.", "thai": "ฉันไม่มีน้องสาว", "tiles": ["我", "没有", "妹妹"], "distractors": ["不"], "tipTh": "ปฏิเสธ 有 ต้องใช้ 没 → 没有 ห้ามใช้ 不有" },
+        { "hanzi": "她是我的姐姐。", "pinyin": "Tā shì wǒ de jiějie.", "thai": "เธอเป็นพี่สาวของฉัน", "tiles": ["她", "是", "我", "的", "姐姐"], "distractors": ["有"], "tipTh": "คำนาม + 的 + คำนาม = …ของ…" }
+      ],
+      "listening": [
+        { "hanzi": "妈妈", "pinyin": "māma", "thai": "แม่", "questionTh": "ได้ยินคำว่าอะไร", "options": ["พ่อ", "แม่", "พี่สาว", "ย่า"], "answer": 1 },
+        { "hanzi": "我家有三口人。", "pinyin": "Wǒ jiā yǒu sān kǒu rén.", "thai": "ครอบครัวฉันมีสามคน", "questionTh": "ครอบครัวผู้พูดมีกี่คน", "options": ["2 คน", "3 คน", "4 คน", "5 คน"], "answer": 1 },
+        { "hanzi": "我有一个弟弟。", "pinyin": "Wǒ yǒu yí ge dìdi.", "thai": "ฉันมีน้องชายหนึ่งคน", "questionTh": "ผู้พูดมีใคร", "options": ["พี่ชาย", "น้องชาย", "น้องสาว", "พี่สาว"], "answer": 1 },
+        { "hanzi": "我没有姐姐。", "pinyin": "Wǒ méiyǒu jiějie.", "thai": "ฉันไม่มีพี่สาว", "questionTh": "ข้อใดถูก", "options": ["ผู้พูดมีพี่สาว", "ผู้พูดไม่มีพี่สาว", "ผู้พูดมีน้องสาว", "ผู้พูดไม่มีพี่ชาย"], "answer": 1 },
+        { "hanzi": "这是我奶奶。", "pinyin": "Zhè shì wǒ nǎinai.", "thai": "นี่คือย่าของฉัน", "questionTh": "ผู้พูดแนะนำใคร", "options": ["ปู่", "ย่า", "แม่", "พ่อ"], "answer": 1 }
+      ],
+      "boss": {
+        "name": "李奶奶",
+        "namePinyin": "Lǐ nǎinai",
+        "emoji": "👵",
+        "roleTh": "คุณยายข้างบ้านใจดี",
+        "scenarioTh": "คุณยายหลี่อยากรู้จักครอบครัวของคุณ เล่าให้คุณยายฟังหน่อย",
+        "persona": "You are Grandma Li, a kind elderly Chinese neighbour who loves hearing about the learner's family.",
+        "targetWords": ["家", "口", "有", "没有", "爸爸", "妈妈", "哥哥", "姐姐", "弟弟", "妹妹"],
+        "script": [
+          { "hanzi": "你家有几口人？", "pinyin": "Nǐ jiā yǒu jǐ kǒu rén?", "thai": "ครอบครัวหนูมีกี่คนจ๊ะ", "keywords": ["口", "人"], "sampleHanzi": "我家有四口人。", "samplePinyin": "Wǒ jiā yǒu sì kǒu rén." },
+          { "hanzi": "你有哥哥吗？", "pinyin": "Nǐ yǒu gēge ma?", "thai": "หนูมีพี่ชายไหม", "keywords": ["有"], "sampleHanzi": "我有一个哥哥。", "samplePinyin": "Wǒ yǒu yí ge gēge." },
+          { "hanzi": "你爸爸是老师吗？", "pinyin": "Nǐ bàba shì lǎoshī ma?", "thai": "พ่อของหนูเป็นครูหรือเปล่า", "keywords": ["是"], "sampleHanzi": "不是，我爸爸不是老师。", "samplePinyin": "Bú shì, wǒ bàba bú shì lǎoshī." },
+          { "hanzi": "这是你妹妹吗？", "pinyin": "Zhè shì nǐ mèimei ma?", "thai": "นี่น้องสาวของหนูใช่ไหม", "keywords": ["是", "妹妹", "姐姐"], "sampleHanzi": "是，这是我妹妹。", "samplePinyin": "Shì, zhè shì wǒ mèimei." },
+          { "hanzi": "你爱你的家人吗？", "pinyin": "Nǐ ài nǐ de jiārén ma?", "thai": "หนูรักครอบครัวของหนูไหม", "keywords": ["爱"], "sampleHanzi": "我爱我的家人。", "samplePinyin": "Wǒ ài wǒ de jiārén." }
+        ]
+      }
+    },
+    {
+      "id": "food",
+      "emoji": "🍜",
+      "titleTh": "อาหารและเครื่องดื่ม",
+      "titleZh": "吃饭",
+      "titlePinyin": "chī fàn",
+      "descriptionTh": "บอกว่าอยากกินอะไร สั่งอาหาร และชมว่าอร่อย",
+      "words": [
+        { "hanzi": "吃", "pinyin": "chī", "thai": "กิน", "emoji": "😋", "english": "to eat" },
+        { "hanzi": "喝", "pinyin": "hē", "thai": "ดื่ม", "emoji": "🥤", "english": "to drink" },
+        { "hanzi": "米饭", "pinyin": "mǐfàn", "thai": "ข้าวสวย", "emoji": "🍚", "english": "cooked rice" },
+        { "hanzi": "面条", "pinyin": "miàntiáo", "thai": "บะหมี่ / เส้นก๋วยเตี๋ยว", "emoji": "🍜", "english": "noodles" },
+        { "hanzi": "水", "pinyin": "shuǐ", "thai": "น้ำ", "emoji": "💧", "english": "water" },
+        { "hanzi": "茶", "pinyin": "chá", "thai": "ชา", "emoji": "🍵", "english": "tea" },
+        { "hanzi": "咖啡", "pinyin": "kāfēi", "thai": "กาแฟ", "emoji": "☕", "english": "coffee" },
+        { "hanzi": "水果", "pinyin": "shuǐguǒ", "thai": "ผลไม้", "emoji": "🍎", "english": "fruit" },
+        { "hanzi": "好吃", "pinyin": "hǎochī", "thai": "อร่อย", "emoji": "😍", "english": "delicious" },
+        { "hanzi": "要", "pinyin": "yào", "thai": "ต้องการ / เอา", "emoji": "👆", "english": "to want" },
+        { "hanzi": "想", "pinyin": "xiǎng", "thai": "อยาก", "emoji": "💭", "english": "would like to" },
+        { "hanzi": "饿", "pinyin": "è", "thai": "หิว", "emoji": "🤤", "english": "hungry" },
+        { "hanzi": "杯", "pinyin": "bēi", "thai": "แก้ว (ลักษณนาม)", "emoji": "🥛", "english": "cup / glass (measure word)" }
+      ],
+      "sentences": [
+        { "hanzi": "我想吃面条。", "pinyin": "Wǒ xiǎng chī miàntiáo.", "thai": "ฉันอยากกินบะหมี่", "tiles": ["我", "想", "吃", "面条"], "distractors": ["喝"], "tipTh": "想 + กริยา = อยาก…" },
+        { "hanzi": "我要一杯茶。", "pinyin": "Wǒ yào yì bēi chá.", "thai": "ขอชาหนึ่งแก้ว", "tiles": ["我", "要", "一", "杯", "茶"], "distractors": ["个"], "tipTh": "จำนวน + 杯 + เครื่องดื่ม: 一杯茶 = ชาหนึ่งแก้ว" },
+        { "hanzi": "你想喝什么？", "pinyin": "Nǐ xiǎng hē shénme?", "thai": "คุณอยากดื่มอะไร", "tiles": ["你", "想", "喝", "什么"], "distractors": ["吃"], "tipTh": "什么 วางหลังกริยา ตรงตำแหน่งของสิ่งที่ถาม" },
+        { "hanzi": "米饭很好吃。", "pinyin": "Mǐfàn hěn hǎochī.", "thai": "ข้าวอร่อยมาก", "tiles": ["米饭", "很", "好吃"], "distractors": ["是"], "tipTh": "ประโยคคุณศัพท์ใช้ 很 เชื่อม ไม่ใช้ 是: 米饭很好吃 ไม่ใช่ 米饭是好吃" },
+        { "hanzi": "我饿了。", "pinyin": "Wǒ è le.", "thai": "ฉันหิวแล้ว", "tiles": ["我", "饿", "了"], "distractors": ["很"], "tipTh": "了 ท้ายประโยคบอกว่าสถานการณ์เปลี่ยนแล้ว: 饿了 = หิวแล้ว" },
+        { "hanzi": "我不喝咖啡。", "pinyin": "Wǒ bù hē kāfēi.", "thai": "ฉันไม่ดื่มกาแฟ", "tiles": ["我", "不", "喝", "咖啡"], "distractors": ["没"], "tipTh": "不 + กริยา = ไม่ทำ… (เป็นนิสัยหรือความตั้งใจ)" }
+      ],
+      "listening": [
+        { "hanzi": "茶", "pinyin": "chá", "thai": "ชา", "questionTh": "ได้ยินคำว่าอะไร", "options": ["น้ำ", "ชา", "กาแฟ", "นม"], "answer": 1 },
+        { "hanzi": "我想吃米饭。", "pinyin": "Wǒ xiǎng chī mǐfàn.", "thai": "ฉันอยากกินข้าว", "questionTh": "ผู้พูดอยากกินอะไร", "options": ["บะหมี่", "ข้าวสวย", "ผลไม้", "ขนมปัง"], "answer": 1 },
+        { "hanzi": "我要两杯咖啡。", "pinyin": "Wǒ yào liǎng bēi kāfēi.", "thai": "ขอกาแฟสองแก้ว", "questionTh": "ผู้พูดสั่งอะไร", "options": ["กาแฟ 1 แก้ว", "กาแฟ 2 แก้ว", "ชา 2 แก้ว", "น้ำ 2 แก้ว"], "answer": 1 },
+        { "hanzi": "这个很好吃！", "pinyin": "Zhège hěn hǎochī!", "thai": "อันนี้อร่อยมาก", "questionTh": "ผู้พูดรู้สึกอย่างไร", "options": ["อร่อยมาก", "ไม่อร่อย", "หิวมาก", "อิ่มแล้ว"], "answer": 0 },
+        { "hanzi": "你想喝水吗？", "pinyin": "Nǐ xiǎng hē shuǐ ma?", "thai": "คุณอยากดื่มน้ำไหม", "questionTh": "ประโยคนี้ถามว่าอะไร", "options": ["อยากกินข้าวไหม", "อยากดื่มน้ำไหม", "อยากดื่มชาไหม", "หิวไหม"], "answer": 1 }
+      ],
+      "boss": {
+        "name": "陈老板",
+        "namePinyin": "Chén lǎobǎn",
+        "emoji": "👨‍🍳",
+        "roleTh": "เจ้าของร้านบะหมี่",
+        "scenarioTh": "คุณหิวมากเลยเข้าร้านบะหมี่ของเถ้าแก่เฉิน ลองสั่งอาหารและเครื่องดื่มให้ได้",
+        "persona": "You are Boss Chen, the warm owner of a small noodle restaurant, taking the learner's order.",
+        "targetWords": ["吃", "喝", "要", "想", "米饭", "面条", "茶", "水", "杯", "好吃"],
+        "script": [
+          { "hanzi": "你好！你想吃什么？", "pinyin": "Nǐ hǎo! Nǐ xiǎng chī shénme?", "thai": "สวัสดี อยากกินอะไรดี", "keywords": ["吃", "要", "面条", "米饭"], "sampleHanzi": "我想吃面条。", "samplePinyin": "Wǒ xiǎng chī miàntiáo." },
+          { "hanzi": "你想喝什么？", "pinyin": "Nǐ xiǎng hē shénme?", "thai": "อยากดื่มอะไร", "keywords": ["喝", "要", "茶", "水", "咖啡"], "sampleHanzi": "我要一杯茶。", "samplePinyin": "Wǒ yào yì bēi chá." },
+          { "hanzi": "要几杯？", "pinyin": "Yào jǐ bēi?", "thai": "เอากี่แก้ว", "keywords": ["杯", "一", "两", "二"], "sampleHanzi": "一杯。", "samplePinyin": "Yì bēi." },
+          { "hanzi": "好吃吗？", "pinyin": "Hǎochī ma?", "thai": "อร่อยไหม", "keywords": ["好吃"], "sampleHanzi": "很好吃！", "samplePinyin": "Hěn hǎochī!" },
+          { "hanzi": "还要别的吗？", "pinyin": "Hái yào bié de ma?", "thai": "เอาอะไรเพิ่มอีกไหม", "keywords": ["要", "谢谢", "没有"], "sampleHanzi": "不要了，谢谢！", "samplePinyin": "Bú yào le, xièxie!" }
+        ]
+      }
+    },
+    {
+      "id": "school",
+      "emoji": "🏫",
+      "titleTh": "โรงเรียน",
+      "titleZh": "学校",
+      "titlePinyin": "xuéxiào",
+      "descriptionTh": "คุยเรื่องเรียน การบ้าน และการสอบ",
+      "words": [
+        { "hanzi": "学校", "pinyin": "xuéxiào", "thai": "โรงเรียน", "emoji": "🏫", "english": "school" },
+        { "hanzi": "老师", "pinyin": "lǎoshī", "thai": "ครู", "emoji": "👩‍🏫", "english": "teacher" },
+        { "hanzi": "同学", "pinyin": "tóngxué", "thai": "เพื่อนร่วมชั้น", "emoji": "🧑‍🤝‍🧑", "english": "classmate" },
+        { "hanzi": "书", "pinyin": "shū", "thai": "หนังสือ", "emoji": "📚", "english": "book" },
+        { "hanzi": "笔", "pinyin": "bǐ", "thai": "ปากกา / ดินสอ", "emoji": "✏️", "english": "pen / pencil" },
+        { "hanzi": "教室", "pinyin": "jiàoshì", "thai": "ห้องเรียน", "emoji": "🚪", "english": "classroom" },
+        { "hanzi": "学习", "pinyin": "xuéxí", "thai": "เรียน", "emoji": "📖", "english": "to study" },
+        { "hanzi": "中文", "pinyin": "Zhōngwén", "thai": "ภาษาจีน", "emoji": "🀄", "english": "Chinese (language)" },
+        { "hanzi": "作业", "pinyin": "zuòyè", "thai": "การบ้าน", "emoji": "📝", "english": "homework" },
+        { "hanzi": "考试", "pinyin": "kǎoshì", "thai": "สอบ", "emoji": "💯", "english": "exam" },
+        { "hanzi": "上课", "pinyin": "shàngkè", "thai": "เข้าเรียน", "emoji": "🔔", "english": "to attend class" },
+        { "hanzi": "写", "pinyin": "xiě", "thai": "เขียน", "emoji": "✍️", "english": "to write" },
+        { "hanzi": "懂", "pinyin": "dǒng", "thai": "เข้าใจ", "emoji": "💡", "english": "to understand" }
+      ],
+      "sentences": [
+        { "hanzi": "我在学校学习中文。", "pinyin": "Wǒ zài xuéxiào xuéxí Zhōngwén.", "thai": "ฉันเรียนภาษาจีนที่โรงเรียน", "tiles": ["我", "在", "学校", "学习", "中文"], "distractors": ["去"], "tipTh": "สถานที่วางไว้หน้ากริยา: 在 + สถานที่ + กริยา" },
+        { "hanzi": "老师在教室。", "pinyin": "Lǎoshī zài jiàoshì.", "thai": "ครูอยู่ในห้องเรียน", "tiles": ["老师", "在", "教室"], "distractors": ["是"], "tipTh": "在 + สถานที่ = อยู่ที่…" },
+        { "hanzi": "这是我的书。", "pinyin": "Zhè shì wǒ de shū.", "thai": "นี่คือหนังสือของฉัน", "tiles": ["这", "是", "我", "的", "书"], "distractors": ["笔"], "tipTh": "กับสิ่งของต้องใส่ 的: 我的书 = หนังสือของฉัน" },
+        { "hanzi": "今天的作业很多。", "pinyin": "Jīntiān de zuòyè hěn duō.", "thai": "การบ้านวันนี้เยอะมาก", "tiles": ["今天", "的", "作业", "很", "多"], "distractors": ["少"], "tipTh": "คำขยายวางหน้าคำนามเสมอ: 今天的作业 = การบ้านของวันนี้" },
+        { "hanzi": "我不懂。", "pinyin": "Wǒ bù dǒng.", "thai": "ฉันไม่เข้าใจ", "tiles": ["我", "不", "懂"], "distractors": ["没"], "tipTh": "不懂 = ไม่เข้าใจ, 懂了 = เข้าใจแล้ว" },
+        { "hanzi": "明天有考试吗？", "pinyin": "Míngtiān yǒu kǎoshì ma?", "thai": "พรุ่งนี้มีสอบไหม", "tiles": ["明天", "有", "考试", "吗"], "distractors": ["什么"], "tipTh": "เวลาวางไว้ต้นประโยคได้: 明天 + 有 + …" }
+      ],
+      "listening": [
+        { "hanzi": "老师", "pinyin": "lǎoshī", "thai": "ครู", "questionTh": "ได้ยินคำว่าอะไร", "options": ["ครู", "นักเรียน", "เพื่อนร่วมชั้น", "หนังสือ"], "answer": 0 },
+        { "hanzi": "我喜欢学习中文。", "pinyin": "Wǒ xǐhuan xuéxí Zhōngwén.", "thai": "ฉันชอบเรียนภาษาจีน", "questionTh": "ผู้พูดชอบอะไร", "options": ["เรียนภาษาจีน", "ทำการบ้าน", "ไปโรงเรียน", "สอบ"], "answer": 0 },
+        { "hanzi": "明天有考试。", "pinyin": "Míngtiān yǒu kǎoshì.", "thai": "พรุ่งนี้มีสอบ", "questionTh": "พรุ่งนี้มีอะไร", "options": ["การบ้าน", "สอบ", "วันหยุด", "ทัศนศึกษา"], "answer": 1 },
+        { "hanzi": "我的笔在哪儿？", "pinyin": "Wǒ de bǐ zài nǎr?", "thai": "ปากกาของฉันอยู่ไหน", "questionTh": "ผู้พูดหาอะไร", "options": ["หนังสือ", "ปากกา", "การบ้าน", "ครู"], "answer": 1 },
+        { "hanzi": "老师，我不懂。", "pinyin": "Lǎoshī, wǒ bù dǒng.", "thai": "ครูคะ หนูไม่เข้าใจ", "questionTh": "ผู้พูดบอกครูว่าอะไร", "options": ["เข้าใจแล้ว", "ไม่เข้าใจ", "ทำการบ้านเสร็จแล้ว", "ขอบคุณ"], "answer": 1 }
+      ],
+      "boss": {
+        "name": "张老师",
+        "namePinyin": "Zhāng lǎoshī",
+        "emoji": "👩‍🏫",
+        "roleTh": "ครูประจำชั้น",
+        "scenarioTh": "หลังเลิกเรียน ครูจางเรียกคุณมาคุยเรื่องการเรียนและการบ้าน",
+        "persona": "You are Teacher Zhang, a patient Chinese homeroom teacher chatting with the learner after class.",
+        "targetWords": ["学校", "老师", "学习", "中文", "作业", "考试", "懂", "书"],
+        "script": [
+          { "hanzi": "你喜欢学习中文吗？", "pinyin": "Nǐ xǐhuan xuéxí Zhōngwén ma?", "thai": "เธอชอบเรียนภาษาจีนไหม", "keywords": ["喜欢"], "sampleHanzi": "我很喜欢学习中文。", "samplePinyin": "Wǒ hěn xǐhuan xuéxí Zhōngwén." },
+          { "hanzi": "你的作业写了吗？", "pinyin": "Nǐ de zuòyè xiě le ma?", "thai": "ทำการบ้านแล้วหรือยัง", "keywords": ["写", "作业", "没有", "还没"], "sampleHanzi": "我写了。", "samplePinyin": "Wǒ xiě le." },
+          { "hanzi": "你懂了吗？", "pinyin": "Nǐ dǒng le ma?", "thai": "เข้าใจหรือยัง", "keywords": ["懂"], "sampleHanzi": "我懂了，谢谢老师！", "samplePinyin": "Wǒ dǒng le, xièxie lǎoshī!" },
+          { "hanzi": "你的书在哪儿？", "pinyin": "Nǐ de shū zài nǎr?", "thai": "หนังสือของเธออยู่ไหน", "keywords": ["在"], "sampleHanzi": "我的书在教室。", "samplePinyin": "Wǒ de shū zài jiàoshì." },
+          { "hanzi": "明天有考试，你准备好了吗？", "pinyin": "Míngtiān yǒu kǎoshì, nǐ zhǔnbèi hǎo le ma?", "thai": "พรุ่งนี้มีสอบ เตรียมตัวพร้อมหรือยัง", "keywords": ["好", "准备", "没有", "还没"], "sampleHanzi": "准备好了！", "samplePinyin": "Zhǔnbèi hǎo le!" }
+        ]
+      }
+    },
+    {
+      "id": "shopping",
+      "emoji": "🛍️",
+      "titleTh": "ช้อปปิ้ง",
+      "titleZh": "买东西",
+      "titlePinyin": "mǎi dōngxi",
+      "descriptionTh": "ถามราคา บอกว่าแพงหรือถูก และต่อราคา",
+      "words": [
+        { "hanzi": "买", "pinyin": "mǎi", "thai": "ซื้อ", "emoji": "🛒", "english": "to buy" },
+        { "hanzi": "卖", "pinyin": "mài", "thai": "ขาย", "emoji": "🏪", "english": "to sell" },
+        { "hanzi": "钱", "pinyin": "qián", "thai": "เงิน", "emoji": "💰", "english": "money" },
+        { "hanzi": "块", "pinyin": "kuài", "thai": "หยวน (ภาษาพูด)", "emoji": "💴", "english": "yuan (spoken)" },
+        { "hanzi": "多少", "pinyin": "duōshao", "thai": "เท่าไร", "emoji": "❔", "english": "how much / how many" },
+        { "hanzi": "贵", "pinyin": "guì", "thai": "แพง", "emoji": "💸", "english": "expensive" },
+        { "hanzi": "便宜", "pinyin": "piányi", "thai": "ถูก (ราคา)", "emoji": "🏷️", "english": "cheap" },
+        { "hanzi": "这个", "pinyin": "zhège", "thai": "อันนี้", "emoji": "👇", "english": "this one" },
+        { "hanzi": "那个", "pinyin": "nàge", "thai": "อันนั้น", "emoji": "👉", "english": "that one" },
+        { "hanzi": "衣服", "pinyin": "yīfu", "thai": "เสื้อผ้า", "emoji": "👕", "english": "clothes" },
+        { "hanzi": "喜欢", "pinyin": "xǐhuan", "thai": "ชอบ", "emoji": "❤️", "english": "to like" },
+        { "hanzi": "太", "pinyin": "tài", "thai": "เกินไป / มากเหลือเกิน", "emoji": "😱", "english": "too (much)" },
+        { "hanzi": "可以", "pinyin": "kěyǐ", "thai": "ได้ (อนุญาต)", "emoji": "👌", "english": "can / may" }
+      ],
+      "sentences": [
+        { "hanzi": "这个多少钱？", "pinyin": "Zhège duōshao qián?", "thai": "อันนี้ราคาเท่าไร", "tiles": ["这个", "多少", "钱"], "distractors": ["几"], "tipTh": "ถามราคาใช้ 多少钱 (几 ใช้กับจำนวนน้อยไม่เกิน 10)" },
+        { "hanzi": "这件衣服很便宜。", "pinyin": "Zhè jiàn yīfu hěn piányi.", "thai": "เสื้อตัวนี้ถูกมาก", "tiles": ["这", "件", "衣服", "很", "便宜"], "distractors": ["个"], "tipTh": "เสื้อผ้าใช้ลักษณนาม 件: 这件衣服 = เสื้อตัวนี้" },
+        { "hanzi": "太贵了！", "pinyin": "Tài guì le!", "thai": "แพงเกินไปแล้ว", "tiles": ["太", "贵", "了"], "distractors": ["很"], "tipTh": "太 + คุณศัพท์ + 了 = …เกินไป" },
+        { "hanzi": "我想买那个。", "pinyin": "Wǒ xiǎng mǎi nàge.", "thai": "ฉันอยากซื้ออันนั้น", "tiles": ["我", "想", "买", "那个"], "distractors": ["卖"], "tipTh": "买 (mǎi) = ซื้อ, 卖 (mài) = ขาย ต่างกันแค่วรรณยุกต์" },
+        { "hanzi": "便宜一点儿，可以吗？", "pinyin": "Piányi yìdiǎnr, kěyǐ ma?", "thai": "ลดหน่อยได้ไหม", "tiles": ["便宜", "一点儿", "可以", "吗"], "distractors": ["太"], "tipTh": "คุณศัพท์ + 一点儿 = …ขึ้นอีกนิด ใช้ต่อราคา" },
+        { "hanzi": "我很喜欢这件衣服。", "pinyin": "Wǒ hěn xǐhuan zhè jiàn yīfu.", "thai": "ฉันชอบเสื้อตัวนี้มาก", "tiles": ["我", "很", "喜欢", "这", "件", "衣服"], "distractors": ["买"], "tipTh": "很 วางหน้า 喜欢 = ชอบมาก" }
+      ],
+      "listening": [
+        { "hanzi": "多少钱？", "pinyin": "Duōshao qián?", "thai": "ราคาเท่าไร", "questionTh": "ประโยคนี้ถามอะไร", "options": ["ราคาเท่าไร", "กี่โมง", "อายุเท่าไร", "อยู่ที่ไหน"], "answer": 0 },
+        { "hanzi": "这个二十块。", "pinyin": "Zhège èrshí kuài.", "thai": "อันนี้ยี่สิบหยวน", "questionTh": "อันนี้ราคาเท่าไร", "options": ["2 หยวน", "12 หยวน", "20 หยวน", "200 หยวน"], "answer": 2 },
+        { "hanzi": "太贵了！", "pinyin": "Tài guì le!", "thai": "แพงเกินไป", "questionTh": "ผู้พูดรู้สึกอย่างไรกับราคา", "options": ["ถูกมาก", "แพงเกินไป", "พอดี", "ฟรี"], "answer": 1 },
+        { "hanzi": "我想买一件衣服。", "pinyin": "Wǒ xiǎng mǎi yí jiàn yīfu.", "thai": "ฉันอยากซื้อเสื้อหนึ่งตัว", "questionTh": "ผู้พูดอยากซื้ออะไร", "options": ["หนังสือ", "ผลไม้", "เสื้อผ้า", "ปากกา"], "answer": 2 },
+        { "hanzi": "可以便宜一点儿吗？", "pinyin": "Kěyǐ piányi yìdiǎnr ma?", "thai": "ลดหน่อยได้ไหม", "questionTh": "ผู้พูดขออะไร", "options": ["ขอลดราคา", "ขอดูของ", "ขอถุง", "ขอเงินทอน"], "answer": 0 }
+      ],
+      "boss": {
+        "name": "王阿姨",
+        "namePinyin": "Wáng āyí",
+        "emoji": "👩‍🦱",
+        "roleTh": "แม่ค้าตลาดนัด",
+        "scenarioTh": "คุณมาเดินตลาด เจอเสื้อตัวสวยที่ร้านป้าหวัง ลองถามราคาและต่อรองให้ได้",
+        "persona": "You are Auntie Wang, a lively market vendor selling clothes who enjoys friendly bargaining.",
+        "targetWords": ["多少", "钱", "块", "贵", "便宜", "买", "这个", "喜欢", "可以"],
+        "script": [
+          { "hanzi": "你好！你想买什么？", "pinyin": "Nǐ hǎo! Nǐ xiǎng mǎi shénme?", "thai": "สวัสดีจ้ะ อยากซื้ออะไร", "keywords": ["买", "衣服", "这个", "那个"], "sampleHanzi": "我想买这件衣服。", "samplePinyin": "Wǒ xiǎng mǎi zhè jiàn yīfu." },
+          { "hanzi": "这件衣服很漂亮，你喜欢吗？", "pinyin": "Zhè jiàn yīfu hěn piàoliang, nǐ xǐhuan ma?", "thai": "เสื้อตัวนี้สวยมาก ชอบไหม", "keywords": ["喜欢"], "sampleHanzi": "我很喜欢。", "samplePinyin": "Wǒ hěn xǐhuan." },
+          { "hanzi": "这件一百块。", "pinyin": "Zhè jiàn yìbǎi kuài.", "thai": "ตัวนี้ร้อยหยวนจ้ะ", "keywords": ["贵", "便宜", "太"], "sampleHanzi": "太贵了！便宜一点儿，可以吗？", "samplePinyin": "Tài guì le! Piányi yìdiǎnr, kěyǐ ma?" },
+          { "hanzi": "好吧，八十块，可以吗？", "pinyin": "Hǎo ba, bāshí kuài, kěyǐ ma?", "thai": "ก็ได้ แปดสิบหยวน โอเคไหม", "keywords": ["可以", "好", "行", "不"], "sampleHanzi": "可以，我买！", "samplePinyin": "Kěyǐ, wǒ mǎi!" },
+          { "hanzi": "谢谢！欢迎再来！", "pinyin": "Xièxie! Huānyíng zài lái!", "thai": "ขอบคุณจ้ะ แวะมาใหม่นะ", "keywords": ["谢谢", "再见", "不客气"], "sampleHanzi": "谢谢阿姨，再见！", "samplePinyin": "Xièxie āyí, zàijiàn!" }
+        ]
+      }
+    },
+    {
+      "id": "travel",
+      "emoji": "🧭",
+      "titleTh": "เดินทางและถามทาง",
+      "titleZh": "问路",
+      "titlePinyin": "wèn lù",
+      "descriptionTh": "ถามทาง บอกทิศ และเลือกวิธีเดินทาง",
+      "words": [
+        { "hanzi": "去", "pinyin": "qù", "thai": "ไป", "emoji": "🏃", "english": "to go" },
+        { "hanzi": "在", "pinyin": "zài", "thai": "อยู่ที่", "emoji": "📍", "english": "to be at / in" },
+        { "hanzi": "哪儿", "pinyin": "nǎr", "thai": "ที่ไหน", "emoji": "🗺️", "english": "where" },
+        { "hanzi": "左", "pinyin": "zuǒ", "thai": "ซ้าย", "emoji": "⬅️", "english": "left" },
+        { "hanzi": "右", "pinyin": "yòu", "thai": "ขวา", "emoji": "➡️", "english": "right" },
+        { "hanzi": "前面", "pinyin": "qiánmiàn", "thai": "ข้างหน้า", "emoji": "⬆️", "english": "in front / ahead" },
+        { "hanzi": "地铁站", "pinyin": "dìtiězhàn", "thai": "สถานีรถไฟใต้ดิน", "emoji": "🚇", "english": "subway station" },
+        { "hanzi": "火车站", "pinyin": "huǒchēzhàn", "thai": "สถานีรถไฟ", "emoji": "🚉", "english": "train station" },
+        { "hanzi": "出租车", "pinyin": "chūzūchē", "thai": "แท็กซี่", "emoji": "🚕", "english": "taxi" },
+        { "hanzi": "远", "pinyin": "yuǎn", "thai": "ไกล", "emoji": "🏔️", "english": "far" },
+        { "hanzi": "近", "pinyin": "jìn", "thai": "ใกล้", "emoji": "🏘️", "english": "near" },
+        { "hanzi": "走", "pinyin": "zǒu", "thai": "เดิน", "emoji": "🚶", "english": "to walk" },
+        { "hanzi": "怎么", "pinyin": "zěnme", "thai": "อย่างไร", "emoji": "🤔", "english": "how" }
+      ],
+      "sentences": [
+        { "hanzi": "地铁站在哪儿？", "pinyin": "Dìtiězhàn zài nǎr?", "thai": "สถานีรถไฟใต้ดินอยู่ที่ไหน", "tiles": ["地铁站", "在", "哪儿"], "distractors": ["去"], "tipTh": "สถานที่ + 在哪儿 = …อยู่ที่ไหน" },
+        { "hanzi": "往前走。", "pinyin": "Wǎng qián zǒu.", "thai": "เดินตรงไป", "tiles": ["往", "前", "走"], "distractors": ["左"], "tipTh": "往 + ทิศทาง + 走 = เดินไปทาง…" },
+        { "hanzi": "火车站在左边。", "pinyin": "Huǒchēzhàn zài zuǒbian.", "thai": "สถานีรถไฟอยู่ทางซ้าย", "tiles": ["火车站", "在", "左边"], "distractors": ["右边"], "tipTh": "左边 = ทางซ้าย, 右边 = ทางขวา" },
+        { "hanzi": "我想去火车站。", "pinyin": "Wǒ xiǎng qù huǒchēzhàn.", "thai": "ฉันอยากไปสถานีรถไฟ", "tiles": ["我", "想", "去", "火车站"], "distractors": ["在"], "tipTh": "去 + สถานที่ = ไป… (ไม่ต้องมีคำว่า 到)" },
+        { "hanzi": "远不远？", "pinyin": "Yuǎn bu yuǎn?", "thai": "ไกลไหม", "tiles": ["远", "不", "远"], "distractors": ["近"], "tipTh": "คุณศัพท์ + 不 + คุณศัพท์ = คำถามแบบใช่หรือไม่ (ไม่ต้องใส่ 吗)" },
+        { "hanzi": "怎么去地铁站？", "pinyin": "Zěnme qù dìtiězhàn?", "thai": "ไปสถานีรถไฟใต้ดินยังไง", "tiles": ["怎么", "去", "地铁站"], "distractors": ["哪儿"], "tipTh": "怎么 + กริยา = …อย่างไร" }
+      ],
+      "listening": [
+        { "hanzi": "左", "pinyin": "zuǒ", "thai": "ซ้าย", "questionTh": "ได้ยินคำว่าอะไร", "options": ["ซ้าย", "ขวา", "ข้างหน้า", "ข้างหลัง"], "answer": 0 },
+        { "hanzi": "往右走。", "pinyin": "Wǎng yòu zǒu.", "thai": "เดินไปทางขวา", "questionTh": "ต้องเดินไปทางไหน", "options": ["ซ้าย", "ขวา", "ตรงไป", "กลับหลัง"], "answer": 1 },
+        { "hanzi": "火车站很远。", "pinyin": "Huǒchēzhàn hěn yuǎn.", "thai": "สถานีรถไฟไกลมาก", "questionTh": "สถานีรถไฟเป็นอย่างไร", "options": ["ใกล้มาก", "ไกลมาก", "อยู่ข้างหน้า", "ปิดแล้ว"], "answer": 1 },
+        { "hanzi": "我们坐出租车去吧。", "pinyin": "Wǒmen zuò chūzūchē qù ba.", "thai": "เรานั่งแท็กซี่ไปกันเถอะ", "questionTh": "ผู้พูดชวนไปด้วยอะไร", "options": ["รถไฟใต้ดิน", "แท็กซี่", "เดินไป", "รถบัส"], "answer": 1 },
+        { "hanzi": "地铁站就在前面。", "pinyin": "Dìtiězhàn jiù zài qiánmiàn.", "thai": "สถานีรถไฟใต้ดินอยู่ข้างหน้านี่เอง", "questionTh": "สถานีรถไฟใต้ดินอยู่ตรงไหน", "options": ["ข้างหน้า", "ทางซ้าย", "ทางขวา", "ไกลมาก"], "answer": 0 }
+      ],
+      "boss": {
+        "name": "警察叔叔",
+        "namePinyin": "jǐngchá shūshu",
+        "emoji": "👮",
+        "roleTh": "คุณตำรวจจราจร",
+        "scenarioTh": "คุณหลงทางในปักกิ่ง! ถามทางคุณตำรวจเพื่อไปสถานีรถไฟให้ทัน",
+        "persona": "You are a friendly Beijing traffic police officer helping a lost Thai student get to the train station.",
+        "targetWords": ["去", "在", "哪儿", "左", "右", "前面", "火车站", "远", "怎么", "走"],
+        "script": [
+          { "hanzi": "你好！你要去哪儿？", "pinyin": "Nǐ hǎo! Nǐ yào qù nǎr?", "thai": "สวัสดี จะไปไหนครับ", "keywords": ["去", "火车站", "地铁站"], "sampleHanzi": "我想去火车站。", "samplePinyin": "Wǒ xiǎng qù huǒchēzhàn." },
+          { "hanzi": "你知道火车站在哪儿吗？", "pinyin": "Nǐ zhīdào huǒchēzhàn zài nǎr ma?", "thai": "รู้ไหมว่าสถานีรถไฟอยู่ที่ไหน", "keywords": ["知道"], "sampleHanzi": "我不知道。", "samplePinyin": "Wǒ bù zhīdào." },
+          { "hanzi": "往前走，然后往左走。明白了吗？", "pinyin": "Wǎng qián zǒu, ránhòu wǎng zuǒ zǒu. Míngbai le ma?", "thai": "เดินตรงไป แล้วเลี้ยวซ้าย เข้าใจไหม", "keywords": ["明白", "懂", "左"], "sampleHanzi": "明白了！往前走，然后往左走。", "samplePinyin": "Míngbai le! Wǎng qián zǒu, ránhòu wǎng zuǒ zǒu." },
+          { "hanzi": "火车站有点儿远。你想怎么去？", "pinyin": "Huǒchēzhàn yǒudiǎnr yuǎn. Nǐ xiǎng zěnme qù?", "thai": "สถานีค่อนข้างไกล อยากไปยังไง", "keywords": ["出租车", "地铁", "走", "坐"], "sampleHanzi": "我坐出租车去。", "samplePinyin": "Wǒ zuò chūzūchē qù." },
+          { "hanzi": "好的，一路平安！", "pinyin": "Hǎo de, yílù píng'ān!", "thai": "โอเค ขอให้เดินทางปลอดภัยนะ", "keywords": ["谢谢"], "sampleHanzi": "谢谢您！再见！", "samplePinyin": "Xièxie nín! Zàijiàn!" }
+        ]
+      }
+    },
+    {
+      "id": "phone",
+      "emoji": "📱",
+      "titleTh": "โทรศัพท์และออนไลน์",
+      "titleZh": "手机",
+      "titlePinyin": "shǒujī",
+      "descriptionTh": "รับโทรศัพท์ ขอเบอร์ และส่งข้อความหรือรูป",
+      "words": [
+        { "hanzi": "手机", "pinyin": "shǒujī", "thai": "โทรศัพท์มือถือ", "emoji": "📱", "english": "mobile phone" },
+        { "hanzi": "电话", "pinyin": "diànhuà", "thai": "โทรศัพท์", "emoji": "📞", "english": "telephone" },
+        { "hanzi": "打电话", "pinyin": "dǎ diànhuà", "thai": "โทรศัพท์ (กริยา)", "emoji": "☎️", "english": "to make a phone call" },
+        { "hanzi": "号码", "pinyin": "hàomǎ", "thai": "หมายเลข", "emoji": "🔢", "english": "number" },
+        { "hanzi": "微信", "pinyin": "Wēixìn", "thai": "WeChat (แอปแชต)", "emoji": "💬", "english": "WeChat" },
+        { "hanzi": "发", "pinyin": "fā", "thai": "ส่ง", "emoji": "📤", "english": "to send" },
+        { "hanzi": "照片", "pinyin": "zhàopiàn", "thai": "รูปถ่าย", "emoji": "🖼️", "english": "photo" },
+        { "hanzi": "视频", "pinyin": "shìpín", "thai": "วิดีโอ", "emoji": "🎬", "english": "video" },
+        { "hanzi": "上网", "pinyin": "shàngwǎng", "thai": "เล่นอินเทอร์เน็ต", "emoji": "🌐", "english": "to go online" },
+        { "hanzi": "喂", "pinyin": "wéi", "thai": "ฮัลโหล (รับโทรศัพท์)", "emoji": "👂", "english": "hello (on the phone)" },
+        { "hanzi": "等", "pinyin": "děng", "thai": "รอ", "emoji": "⏳", "english": "to wait" },
+        { "hanzi": "一下", "pinyin": "yíxià", "thai": "สักครู่ / สักหน่อย", "emoji": "⏱️", "english": "a moment / a bit" },
+        { "hanzi": "没电", "pinyin": "méi diàn", "thai": "แบตหมด", "emoji": "🪫", "english": "battery dead" }
+      ],
+      "sentences": [
+        { "hanzi": "你的电话号码是多少？", "pinyin": "Nǐ de diànhuà hàomǎ shì duōshao?", "thai": "เบอร์โทรของคุณคืออะไร", "tiles": ["你的", "电话", "号码", "是", "多少"], "distractors": ["几"], "tipTh": "ถามเบอร์โทรใช้ 是多少 ไม่ใช้ 是什么" },
+        { "hanzi": "我给你打电话。", "pinyin": "Wǒ gěi nǐ dǎ diànhuà.", "thai": "ฉันจะโทรหาคุณ", "tiles": ["我", "给", "你", "打电话"], "distractors": ["发"], "tipTh": "给 + คน + 打电话 = โทรหา…" },
+        { "hanzi": "请发微信给我。", "pinyin": "Qǐng fā Wēixìn gěi wǒ.", "thai": "ส่ง WeChat มาหาฉันหน่อย", "tiles": ["请", "发", "微信", "给", "我"], "distractors": ["打"], "tipTh": "请 วางต้นประโยคเพื่อขอร้องอย่างสุภาพ" },
+        { "hanzi": "我的手机没电了。", "pinyin": "Wǒ de shǒujī méi diàn le.", "thai": "มือถือฉันแบตหมดแล้ว", "tiles": ["我的", "手机", "没电", "了"], "distractors": ["不"], "tipTh": "没电了 = แบตหมดแล้ว (了 บอกการเปลี่ยนแปลง)" },
+        { "hanzi": "请等一下。", "pinyin": "Qǐng děng yíxià.", "thai": "กรุณารอสักครู่", "tiles": ["请", "等", "一下"], "distractors": ["了"], "tipTh": "กริยา + 一下 = ทำ…สักหน่อย ฟังสุภาพขึ้น" },
+        { "hanzi": "你在上网吗？", "pinyin": "Nǐ zài shàngwǎng ma?", "thai": "คุณกำลังเล่นเน็ตอยู่ไหม", "tiles": ["你", "在", "上网", "吗"], "distractors": ["去"], "tipTh": "在 + กริยา = กำลัง…อยู่" }
+      ],
+      "listening": [
+        { "hanzi": "喂？", "pinyin": "Wéi?", "thai": "ฮัลโหล", "questionTh": "ผู้พูดกำลังทำอะไร", "options": ["รับโทรศัพท์", "ถ่ายรูป", "ส่งข้อความ", "ดูวิดีโอ"], "answer": 0 },
+        { "hanzi": "我的手机没电了。", "pinyin": "Wǒ de shǒujī méi diàn le.", "thai": "มือถือฉันแบตหมดแล้ว", "questionTh": "เกิดอะไรขึ้น", "options": ["มือถือหาย", "มือถือแบตหมด", "มือถือพัง", "ไม่มีเน็ต"], "answer": 1 },
+        { "hanzi": "我给你发照片。", "pinyin": "Wǒ gěi nǐ fā zhàopiàn.", "thai": "ฉันจะส่งรูปให้คุณ", "questionTh": "ผู้พูดจะส่งอะไร", "options": ["วิดีโอ", "รูปถ่าย", "เงิน", "เบอร์โทร"], "answer": 1 },
+        { "hanzi": "请等一下。", "pinyin": "Qǐng děng yíxià.", "thai": "กรุณารอสักครู่", "questionTh": "ผู้พูดขอให้ทำอะไร", "options": ["รอสักครู่", "โทรกลับ", "พูดช้า ๆ", "วางสาย"], "answer": 0 },
+        { "hanzi": "晚上给我打电话吧。", "pinyin": "Wǎnshang gěi wǒ dǎ diànhuà ba.", "thai": "ตอนเย็นโทรหาฉันนะ", "questionTh": "ผู้พูดอยากให้ทำอะไร", "options": ["ส่งรูปตอนเย็น", "โทรหาตอนเย็น", "เจอกันตอนเช้า", "เล่นเน็ตด้วยกัน"], "answer": 1 }
+      ],
+      "boss": {
+        "name": "小丽",
+        "namePinyin": "Xiǎo Lì",
+        "emoji": "🤳",
+        "roleTh": "เพื่อนที่โทรมาหา",
+        "scenarioTh": "โทรศัพท์ดัง! เสี่ยวลี่โทรมาชวนคุณไปเที่ยว คุยโทรศัพท์กับเธอให้รู้เรื่อง",
+        "persona": "You are Xiao Li, the learner's Chinese friend, calling on the phone to make weekend plans.",
+        "targetWords": ["喂", "电话", "手机", "微信", "发", "照片", "等", "一下", "号码"],
+        "script": [
+          { "hanzi": "喂？你好！是我，小丽！", "pinyin": "Wéi? Nǐ hǎo! Shì wǒ, Xiǎo Lì!", "thai": "ฮัลโหล สวัสดี นี่ฉันเสี่ยวลี่เอง", "keywords": ["喂", "你好", "小丽"], "sampleHanzi": "喂，小丽，你好！", "samplePinyin": "Wéi, Xiǎo Lì, nǐ hǎo!" },
+          { "hanzi": "你现在在做什么？", "pinyin": "Nǐ xiànzài zài zuò shénme?", "thai": "ตอนนี้ทำอะไรอยู่", "keywords": ["在"], "sampleHanzi": "我在上网。", "samplePinyin": "Wǒ zài shàngwǎng." },
+          { "hanzi": "你有微信吗？", "pinyin": "Nǐ yǒu Wēixìn ma?", "thai": "มี WeChat ไหม", "keywords": ["有"], "sampleHanzi": "有，我有微信。", "samplePinyin": "Yǒu, wǒ yǒu Wēixìn." },
+          { "hanzi": "请发一张照片给我，好吗？", "pinyin": "Qǐng fā yì zhāng zhàopiàn gěi wǒ, hǎo ma?", "thai": "ส่งรูปมาให้ฉันสักรูปได้ไหม", "keywords": ["好", "可以", "等", "发"], "sampleHanzi": "好的，等一下。", "samplePinyin": "Hǎo de, děng yíxià." },
+          { "hanzi": "我的手机快没电了，再见！", "pinyin": "Wǒ de shǒujī kuài méi diàn le, zàijiàn!", "thai": "มือถือฉันใกล้แบตหมดแล้ว บ๊ายบาย!", "keywords": ["再见", "拜拜", "好"], "sampleHanzi": "好的，再见！", "samplePinyin": "Hǎo de, zàijiàn!" }
+        ]
+      }
+    }
+  ]
+}
