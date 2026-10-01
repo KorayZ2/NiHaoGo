@@ -1,6 +1,7 @@
 package com.example.nihaogo.data.user
 
 import android.content.Context
+import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -28,7 +29,9 @@ object GoogleCredentials {
                 "Unexpected credential type ${credential.type}"
             }
             Result.Token(GoogleIdTokenCredential.createFrom(credential.data).idToken)
-        } catch (_: GetCredentialCancellationException) {
+        } catch (e: GetCredentialCancellationException) {
+            // A SHA-1 missing from Firebase also lands here (e.g. "[16] Account reauth failed"), not as an error.
+            Log.w("GoogleCredentials", "Sign-in cancelled: ${e.message}")
             Result.Cancelled
         } catch (_: NoCredentialException) {
             Result.NoAccount
