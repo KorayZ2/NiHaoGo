@@ -56,7 +56,7 @@
 
 **① คำศัพท์ + ออกเสียงตาม**
 - การ์ดคำศัพท์แสดง emoji, อักษรจีน, พินอิน และคำแปลไทย กดปุ่ม 🔊 แล้วเครื่องจะอ่านออกเสียงด้วย TTS
-- กดไมค์แล้วพูดตาม ระบบให้คะแนน 0–100 (วิธีคิดคะแนนอยู่ในข้อ 4.3)
+- กดไมค์แล้วพูดตาม ระบบให้คะแนน 0–100 (วิธีคิดคะแนนอยู่ในข้อ 3.5)
 - มินิเกมจับคู่ ภาพ ↔ อักษร ↔ เสียง
 - คะแนนรวม = ออกเสียง 60% + จับคู่ 40% (ถ้าเครื่องฟังเสียงไม่ได้ จะคิดจากการจับคู่อย่างเดียว) ผ่านเมื่อได้อย่างน้อย 1 ดาว (50 คะแนนขึ้นไป)
 
@@ -118,53 +118,66 @@
 
 ## 3. สถาปัตยกรรมและเทคโนโลยี
 
-### 3.1 Dependencies ที่จะเพิ่ม
-- **Navigation Compose** สำหรับย้ายระหว่างหน้า และ **Lifecycle ViewModel Compose**
+### 3.1 Dependencies ที่ใช้อยู่ (`gradle/libs.versions.toml`)
+- **Navigation Compose**, **Lifecycle ViewModel Compose** และ **Material Icons**
+- **DataStore** สำหรับเก็บความคืบหน้าและการตั้งค่าในเครื่อง
 - **kotlinx.serialization** สำหรับอ่านไฟล์เนื้อหา JSON ใน `assets/`
-- **Firebase BoM**: Auth (แบบ Anonymous และ Google) กับ Firestore
-- **Credential Manager + Google ID** สำหรับล็อกอินด้วย Google
+- **Firebase BoM**: Auth (แบบ Anonymous และ Google) กับ Firestore และ **kotlinx-coroutines-play-services**
+- **Credential Manager + Google ID** สำหรับล็อกอินด้วย Google และ **Coil** สำหรับแสดงรูปโปรไฟล์
 - **OkHttp** สำหรับเรียก Gemini REST API ผ่าน key ใน `BuildConfig`
+- **pinyin4j** สำหรับแปลงอักษรจีนเป็นพินอินตอนคิดคะแนนออกเสียง
 - **Google Mobile Ads SDK** (AdMob Rewarded)
-- **Play Billing Library**
-- อัปเดตไลบรารีเดิมที่เก่าแล้ว (core-ktx, lifecycle, activity-compose)
+- ⏳ **Play Billing Library** ยังไม่ได้ใส่ (วัน 14)
 
 ### 3.2 โครงสร้างแพ็กเกจ
 ```
 com.example.nihaogo/
 ├── data/
-│   ├── content/     # โมเดล JSON (Category, Word, Sentence, Dialog, Scene) + ContentRepository
-│   ├── user/        # AuthRepository, UserRepository (Firestore)
-│   └── ai/          # GeminiClient, BossJudge (สร้าง prompt และแปลงผล JSON)
-├── speech/          # TtsManager, SpeechRecognizerManager, PronunciationScorer
-├── monetization/    # RewardedAdManager, BillingManager, CoinLedger
+│   ├── content/     # ContentModels, SpecialModels + ContentRepository (อ่าน JSON ใน assets)
+│   ├── user/        # UserProgress, ProgressRepository (DataStore), ProgressSync (Firestore),
+│   │                # AuthRepository, AccountManager, GoogleCredentials, GameRules, SpecialRules
+│   └── ai/          # GeminiClient, BossEngine (บอสและลูกค้าพิเศษ), Interrogation (ผู้ต้องสงสัย)
+├── speech/          # Speaker (TTS), SpeechInput (SpeechRecognizer), ChineseText (คิดคะแนน), Pinyin
+├── audio/           # Sfx (เสียงเอฟเฟกต์และการสั่น), AppSettings (สวิตช์เสียงและสั่น)
+├── monetization/    # RewardedAds (AdMob) · ยังไม่มี Billing
 ├── ui/
 │   ├── theme/
-│   ├── home/        # แผนที่หลัก
+│   ├── common/      # AppViewModel, Components, Motion (แอนิเมชัน), InkBackground, PinyinText
+│   ├── cover/       # หน้าปกตอนเปิดแอป
+│   ├── home/        # แผนที่หลัก (HomeScreen) และหน้าเลือกขั้นในหมวด (CategoryScreen)
 │   ├── lesson/      # VocabStep, SentenceStep, ListeningStep
-│   ├── boss/        # หน้าแชตกับบอส AI
-│   ├── detective/
-│   ├── career/
-│   ├── shop/        # ร้านเหรียญ ดูโฆษณา พรีเมียม
-│   └── profile/
+│   ├── boss/        # หน้าแชตกับบอส AI (ใช้กับลูกค้าพิเศษของโหมดอาชีพด้วย)
+│   ├── special/     # ModeScreen + ฉากแต่ละแบบ (Find, Dialogue, Puzzle, Interrogate, Training)
+│   ├── profile/     # บัญชี Google, ดูโฆษณาแลกเหรียญ, สวิตช์เสียง
+│   └── NiHaoGoNavHost.kt
+├── MainActivity.kt, NiHaoGoApp.kt
 └── AppContainer.kt  # manual DI (โปรเจกต์ขนาดนี้ยังไม่ต้องใช้ Hilt)
 
 app/src/main/assets/content/
 ├── categories.json          # 8 หมวด: คำศัพท์ ประโยค บทสนทนา และบทของบอส
-├── detective_case1.json
-└── career_doctor.json
+└── special.json             # คดีนักสืบ (mansion) และอาชีพ (doctor, flight)
+
+app/src/main/res/raw/sfx_*.wav   # เสียงเอฟเฟกต์ (สร้างด้วย tools/gen_sfx.py)
 ```
 
 ### 3.3 โครงข้อมูล Firestore
+ความคืบหน้าเก็บในเครื่อง (DataStore) เป็นหลัก แล้ว `ProgressSync` ส่งสำเนาขึ้นไปทุกครั้งที่เปลี่ยน
 ```
 users/{uid}
-  displayName, createdAt
+  createdAt, updatedAt: Timestamp     # จาก serverTimestamp()
   coins: Int
   premium: Boolean
-  ads: { date: "2026-09-23", count: 1 }
-  progress: { "greeting": { vocab: 3, sentence: 2, listening: 3, boss: true }, ... }
-  unlocked: ["detective_scene1", "career_doctor"]
+  progress: { "greeting": { vocab: 3, sentence: 2, listening: 3, boss: 2 }, ... }   # ดาวที่ดีที่สุด 0–3
+  unlocked: ["mansion/1", "doctor/1"]           # ฉากโหมดพิเศษที่จ่ายเหรียญปลดล็อกแล้ว
+  special: { "mansion/0": 3, "doctor/0": 2 }    # ดาวที่ดีที่สุดของแต่ละฉาก
+  bossRetry: ["food", "doctor/2"]               # บอสที่แพ้หรือออกกลางคันครั้งล่าสุด (เล่นซ้ำต้องจ่าย)
+  daily: { day: "2026-10-14", freeRetries: 1, adsWatched: 2 }   # รีเซ็ตทุกวัน
 ```
-- Security Rules อนุญาตให้ผู้ใช้อ่านและเขียนได้เฉพาะเอกสารของตัวเอง
+- คีย์ของฉากคือ `{modeId}/{index}` (`SpecialRules.sceneKey`) ส่วนบอสหมวดใช้ id ของหมวด
+- Security Rules อยู่ใน `firestore.rules` (deploy ด้วย `firebase deploy --only firestore:rules`):
+  - อ่านและเขียนได้เฉพาะเอกสารของตัวเอง และลบไม่ได้
+  - ตรวจทุกครั้งที่เขียนว่ามีเฉพาะฟิลด์ข้างบน ชนิดข้อมูลถูก เหรียญไม่ติดลบ ดาวอยู่ระหว่าง 0–3 ตัวนับรายวันไม่เกินกำหนด และ id ของหมวดหรือฉากต้องมีอยู่จริง
+  - ⚠️ เมื่อเพิ่มหมวด ฉาก หรือเปลี่ยนเพดานรายวันใน `GameRules` ต้องแก้ `categoryIds()`, `sceneKeys()` หรือ `isDaily()` ใน `firestore.rules` ด้วย ไม่อย่างนั้นจะซิงก์ไม่ผ่าน
 - เปิด Firestore offline persistence ไว้ (ค่าเริ่มต้นเปิดอยู่แล้ว) ทำให้เล่นตอนออฟไลน์แล้วค่อยซิงก์ทีหลังได้
 
 ### 3.4 Gemini API (ใช้ key ตรง)
@@ -188,19 +201,22 @@ users/{uid}
 
 ## 4. ตารางงาน 3 สัปดาห์
 
-### 📍 สถานะล่าสุด (23 ก.ย. 2026)
+### 📍 สถานะล่าสุด (14 ต.ค. 2026)
 - ✅ ทำครบทั้ง 4 ขั้น เนื้อหา 8 หมวด และบอสแบบบทสำรอง ทดสอบบน emulator แล้วเล่นได้ทุกหน้า
-- ✅ unit test 53 ตัวผ่านทั้งหมด (คิดคะแนนออกเสียง, กติกาเหรียญ, กติกาโหมดพิเศษ, ตรวจไฟล์เนื้อหาทั้ง 2 ไฟล์, AI สอบปากคำ)
+- ✅ unit test 58 ตัวผ่านทั้งหมด (คิดคะแนนออกเสียง, กติกาเหรียญ, ค่าเล่นบอสซ้ำและโฆษณา, กติกาโหมดพิเศษ, ตรวจไฟล์เนื้อหาทั้ง 2 ไฟล์, AI สอบปากคำ)
 - ✅ โหมดนักสืบ 4 ฉาก และอาชีพหมอกับลูกเรืออาชีพละ 3 ฉาก ทำเสร็จแล้ว ทดสอบบน emulator (รวม Gemini) ได้ทุกฉาก
 - ⏳ เนื้อหาใน `special.json` (ศัพท์ใหม่ 70 คำ บทสนทนา และบทลับของผู้ต้องสงสัย) รออาจารย์ตรวจ
 - ✅ ใส่ `GEMINI_API_KEY` แล้ว และทดสอบบอสโหมด Gemini บน emulator แล้ว ทั้งเปิดบทสนทนาและตรวจคำตอบ
 - ✅ (28 ก.ย.) เชื่อม Firebase แล้ว: ล็อกอินแบบ Anonymous อัตโนมัติ และซิงก์ความคืบหน้าขึ้น `users/{uid}` ทดสอบบน emulator ผ่าน
+- ✅ ล็อกอินด้วย Google ได้แล้ว: เชื่อมบัญชี Guest เดิม เลือกได้ว่าจะเก็บความคืบหน้าฝั่งไหนเมื่อบัญชีมีข้อมูลอยู่แล้ว และออกจากระบบ ทดสอบแล้วใช้ได้
+- ✅ (13 ต.ค.) จ่ายเหรียญเมื่อเล่นบอสซ้ำ, AdMob Rewarded, เสียงเอฟเฟกต์ และแอนิเมชัน
+- ✅ (14 ต.ค.) เพิ่ม `firestore.rules`, `firebase.json` และ `.firebaserc` แล้ว ⏳ แต่ยังไม่ได้ deploy ขึ้น Firebase
 - ⏳ ยังไม่ได้ทดสอบ: การพูดจริงผ่านไมค์ (ต้องใช้มือถือจริง)
 - ℹ️ ความคืบหน้าบันทึกในเครื่อง (DataStore) เป็นหลัก แล้ว `ProgressSync` ส่งสำเนาขึ้น Firestore ทำให้เล่นออฟไลน์ได้ ล็อกอินครั้งแรกจะย้ายข้อมูลเดิมในเครื่องขึ้นไปด้วย
 - ℹ️ debug build มีปุ่ม "ปลดล็อกทุกด่าน" อยู่ท้ายหน้าแรก ใช้สำหรับทดสอบและเดโม
 
 ### สัปดาห์ที่ 1 — ฐานระบบ + ขั้น ① และ ②
-- [ ] **วัน 1** เริ่มใช้ git (เครื่องนี้ยังไม่ได้ติดตั้ง git)
+- [x] **วัน 1** เริ่มใช้ git และเชื่อมกับ GitHub แล้ว
 - [x] **วัน 1** อัปเดต dependencies, วาง Navigation, ธีม และฟอนต์ที่แสดงอักษรจีนและไทยได้
 - [x] **วัน 1** เชื่อม Firebase (ต้องใช้ `google-services.json` จากฝั่งคุณ) ให้ล็อกอินแบบ Anonymous ได้
 - [x] **วัน 2** กำหนด schema ของ JSON แล้ว Claude ร่างเนื้อหา 8 หมวด → **ส่งให้อาจารย์ตรวจ** (`app/src/main/assets/content/categories.json`)
@@ -213,17 +229,20 @@ users/{uid}
 - [x] **วัน 6** ทำขั้น ③: ฟังแล้วตอบ และโหมดฟังช้า
 - [x] **วัน 7–8** ทำบอส AI: GeminiClient, prompt ของแต่ละหมวด, หน้าแชต และตรวจคำตอบครบ 5 รอบ (ถ้าไม่มี key จะใช้บทสำรอง)
 - [x] **วัน 9** ระบบดาว เหรียญ และถ้วย พร้อมบันทึกความคืบหน้าลง Firestore
-- [ ] **วัน 9** ล็อกอินด้วย Google (เชื่อมบัญชี Guest เดิมเข้ากับบัญชี Google) และหน้าโปรไฟล์
-- [ ] **วัน 9** จ่ายเหรียญเมื่อเล่นบอสซ้ำ (ฟรีวันละ 1 ครั้ง จากนั้น −10)
+- [x] **วัน 9** ล็อกอินด้วย Google (เชื่อมบัญชี Guest เดิมเข้ากับบัญชี Google) และหน้าโปรไฟล์ ถ้าบัญชี Google มีความคืบหน้าจากเครื่องอื่นอยู่แล้ว ให้ผู้เล่นเลือกว่าจะเก็บฝั่งไหน ส่วนการออกจากระบบจะเริ่มเป็น Guest ใหม่
+- [x] **วัน 9** จ่ายเหรียญเมื่อเล่นบอสซ้ำ (ฟรีวันละ 1 ครั้ง จากนั้น −10) ใช้กับบอสหมวดและลูกค้าพิเศษของโหมดอาชีพ นับรวมทุกบอส และนับเป็นการแพ้ตั้งแต่ส่งคำตอบแรก (ออกกลางคันก็เสียสิทธิ์)
 - [ ] **วัน 10** เติมเนื้อหาครบ 8 หมวด ✅ แล้ว เหลือรออาจารย์ตรวจ และทดสอบให้เล่นได้ตั้งแต่ต้นจนจบบนมือถือจริง
 - 🎯 **จบสัปดาห์:** เล่นแผนที่หลักครบ 8 หมวด มีเหรียญ และข้อมูลซิงก์ขึ้นคลาวด์
 
 ### สัปดาห์ที่ 3 — โหมดพิเศษ, รายได้ และขัดเกลา
 - [x] **วัน 11–12** ทำโหมดนักสืบ 4 ฉาก (ฉากสุดท้ายใช้ AI เป็นผู้ต้องสงสัย)
 - [x] **วัน 13** ทำโหมดอาชีพหมอ 3 ฉาก และอาชีพลูกเรืออีก 3 ฉาก พร้อมระบบเลื่อนตำแหน่ง
-- [ ] **วัน 13** ใส่ AdMob Rewarded (ใช้ test ad unit) และจำกัดวันละ 2 ครั้ง
+- [x] **วัน 13** ใส่ AdMob Rewarded (ใช้ test ad unit) และจำกัดวันละ 2 ครั้ง มีปุ่มในหน้าโปรไฟล์ และในหน้าเล่นบอสซ้ำเมื่อเหรียญไม่พอ (ใส่ ID จริงได้ที่ `ADMOB_APP_ID` / `ADMOB_REWARDED_ID` ใน `local.properties`)
 - [ ] **วัน 14** ทำร้านค้าและ Play Billing (แพ็กเหรียญกับพรีเมียม) ดูเงื่อนไขในข้อ 5
 - [ ] **วัน 15** ขัดเกลาหน้าตา แอนิเมชัน และเสียงเอฟเฟกต์ แก้บั๊ก แล้ว build APK สำหรับเดโม
+  - ✅ (13 ต.ค.) ใส่เสียงเอฟเฟกต์ 8 เสียง (`res/raw/sfx_*.wav` สร้างด้วย `python tools/gen_sfx.py` เปลี่ยนเป็นไฟล์จริงได้โดยใช้ชื่อเดิม) และสั่นเมื่อตอบผิด มีสวิตช์ในหน้าโปรไฟล์
+  - ✅ (13 ต.ค.) ใส่แอนิเมชันแล้ว ได้แก่ ตอบถูกแล้วเด้ง ตอบผิดแล้วสั่น หน้าสรุปผลที่ดาวเด้งทีละดวงพร้อมพลุกระดาษ การเปลี่ยนหน้า โหนดบนแผนที่ ปลดล็อกหมวด ปุ่มกดยุบ และชิปเหรียญ ทดสอบบน emulator แล้ว
+  - ⏳ เหลือ: ขัดเกลาหน้าตาส่วนอื่น แก้บั๊ก และ build APK สำหรับเดโม
 - 🎯 **จบสัปดาห์:** ได้ต้นแบบครบพร้อมเดโม
 
 ### ลำดับความสำคัญ (ถ้าเวลาไม่พอให้ตัดจากล่างขึ้นบน)
@@ -239,6 +258,7 @@ users/{uid}
 | สิ่งที่ต้องเตรียม | ใช้ตอนไหน | วิธีทำ |
 |---|---|---|
 | โปรเจกต์ Firebase + `google-services.json` | วัน 1 | สร้างที่ console.firebase.google.com → Add Android app ด้วย package `com.example.nihaogo` → เปิดใช้ Auth (Anonymous และ Google) และ Firestore |
+| Deploy Security Rules | ก่อนเดโม | ติดตั้ง Firebase CLI (`npm i -g firebase-tools`) → `firebase login` → `firebase deploy --only firestore:rules` หรือคัดลอก `firestore.rules` ไปวางใน Console → Firestore → Rules |
 | SHA-1 ของ debug keystore | วัน 9 | รัน `gradlew signingReport` แล้วนำไปใส่ใน Firebase เพื่อให้ล็อกอินด้วย Google ได้ |
 | Gemini API key | วัน 7 | สร้างที่ aistudio.google.com แล้วใส่ใน `local.properties` ด้วยตัวเอง |
 | มือถือ Android จริง | วัน 3 เป็นต้นไป | ไมค์บน emulator ใช้ได้ไม่ดี ต้องมีแอป Google และเปิดภาษาจีน (zh-CN) สำหรับทั้งเสียงพูดและ TTS |
@@ -256,7 +276,7 @@ users/{uid}
 | มือถือบางรุ่นไม่รองรับการรู้จำเสียงภาษาจีน | ตรวจตอนเปิดแอป ถ้าไม่รองรับ ให้ใช้โหมดพิมพ์หรือเลือกคำตอบแทน |
 | Gemini ช้าหรือโควตาเต็ม | แสดงสถานะ "บอสกำลังคิด…", ใช้ timeout และ retry, จำกัดการเล่นซ้ำด้วยเหรียญ และมีบทสำรองที่เขียนไว้ล่วงหน้า |
 | API key หลุด | ใช้กับต้นแบบเท่านั้น, จำกัดสิทธิ์ key ใน Google Cloud และย้ายไป backend ก่อนปล่อยจริง |
-| ผู้เล่นโกงเหรียญ (เพราะเขียนเหรียญลง Firestore จากฝั่งแอป) | ยอมรับได้สำหรับต้นแบบ แล้วย้ายไปใช้ Cloud Functions ในเฟสหลัง |
+| ผู้เล่นโกงเหรียญ (เพราะเขียนเหรียญลง Firestore จากฝั่งแอป) | `firestore.rules` กันข้อมูลผิดรูปแบบ (เช่น เหรียญติดลบ ดาวเกิน 3) แต่ยังกันการแก้จำนวนเหรียญหรือ `premium` ไม่ได้ ยอมรับได้สำหรับต้นแบบ แล้วย้ายไปใช้ Cloud Functions ในเฟสหลัง |
 | เนื้อหาภาษาจีนผิด | อาจารย์ตรวจก่อนสัปดาห์ที่ 2 จบ |
 
 ---
