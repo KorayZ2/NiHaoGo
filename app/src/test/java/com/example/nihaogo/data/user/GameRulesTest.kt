@@ -84,4 +84,59 @@ class GameRulesTest {
         assertTrue(GameRules.isStepUnlocked("a", Step.Sentence, vocabDone))
         assertFalse(GameRules.isStepUnlocked("a", Step.Listening, vocabDone))
     }
+
+    @Test
+    fun bossIsFreeUntilAnAttemptIsLost() {
+        val fresh = UserProgress()
+        assertEquals(GameRules.BossEntry.Free, GameRules.bossEntry(fresh, "a", DAY))
+        assertEquals(fresh, GameRules.payForBoss(fresh, "a", DAY))
+
+        val lost = GameRules.markBossAttempt(fresh, "a")
+        assertEquals(GameRules.BossEntry.FreeRetry, GameRules.bossEntry(lost, "a", DAY))
+        assertEquals(GameRules.BossEntry.Free, GameRules.bossEntry(lost, "b", DAY))
+
+        val won = GameRules.markBossWon(lost, "a")
+        assertEquals(GameRules.BossEntry.Free, GameRules.bossEntry(won, "a", DAY))
+    }
+
+    @Test
+    fun oneFreeRetryPerDayAcrossBosses() {
+        val lostBoth = UserProgress(coins = 15, bossRetry = setOf("a", "b"))
+        val usedFree = GameRules.payForBoss(lostBoth, "a", DAY)!!
+        assertEquals(15, usedFree.coins)
+        assertEquals(GameRules.BossEntry.PaidRetry, GameRules.bossEntry(usedFree, "b", DAY))
+
+        val paid = GameRules.payForBoss(usedFree, "b", DAY)!!
+        assertEquals(15 - GameRules.BOSS_RETRY_COST, paid.coins)
+        assertNull(GameRules.payForBoss(paid, "a", DAY))
+
+        assertEquals(GameRules.BossEntry.FreeRetry, GameRules.bossEntry(paid, "a", "2026-10-14"))
+    }
+
+    @Test
+    fun premiumRetriesForFree() {
+        val premium = UserProgress(premium = true, bossRetry = setOf("a"), daily = DailyUsage(DAY, freeRetries = 1))
+        assertEquals(GameRules.BossEntry.Free, GameRules.bossEntry(premium, "a", DAY))
+        assertEquals(0, GameRules.adsLeft(premium, DAY))
+    }
+
+    @Test
+    fun adsPayCoinsUpToTheDailyLimit() {
+        var progress = UserProgress()
+        repeat(GameRules.ADS_PER_DAY) { progress = GameRules.applyAdReward(progress, DAY)!! }
+        assertEquals(GameRules.ADS_PER_DAY * GameRules.AD_REWARD, progress.coins)
+        assertEquals(0, GameRules.adsLeft(progress, DAY))
+        assertNull(GameRules.applyAdReward(progress, DAY))
+
+        assertEquals(GameRules.ADS_PER_DAY, GameRules.adsLeft(progress, "2026-10-14"))
+    }
+
+    @Test
+    fun todayIsLocalIsoDate() {
+        assertTrue(Regex("""\d{4}-\d{2}-\d{2}""").matches(GameRules.today()))
+    }
+
+    private companion object {
+        const val DAY = "2026-10-13"
+    }
 }

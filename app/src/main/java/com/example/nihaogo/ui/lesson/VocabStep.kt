@@ -1,5 +1,14 @@
 package com.example.nihaogo.ui.lesson
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,14 +20,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,7 +48,13 @@ import com.example.nihaogo.data.content.Word
 import com.example.nihaogo.data.user.GameRules
 import com.example.nihaogo.speech.ChineseText
 import com.example.nihaogo.speech.Heard
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameOutlinedButton
+import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.GameTopBar
+import com.example.nihaogo.ui.common.answerFeedback
+import com.example.nihaogo.ui.common.appear
+import com.example.nihaogo.ui.common.pop
 import com.example.nihaogo.ui.common.HanziBlock
 import com.example.nihaogo.ui.common.InkScaffold
 import com.example.nihaogo.ui.common.MicButton
@@ -117,6 +130,7 @@ class VocabViewModel(private val container: AppContainer, private val categoryId
                     val target = words[index].hanzi
                     val best = heard.candidates.maxBy { ChineseText.similarityScore(target, it) }
                     val score = ChineseText.similarityScore(target, best)
+                    container.sfx.answer(score >= GameRules.SPEECH_PASS_SCORE)
                     _state.update {
                         it.copy(
                             scores = it.scores + (index to maxOf(score, it.scores[index] ?: 0)),
@@ -180,8 +194,12 @@ class VocabViewModel(private val container: AppContainer, private val categoryId
         if (tile.wordIndex in s.matched || s.wrong.isNotEmpty()) return
         val selected = s.selected
         when {
-            selected == null || selected.isHanzi == tile.isHanzi -> _state.update { it.copy(selected = tile) }
+            selected == null || selected.isHanzi == tile.isHanzi -> {
+                container.sfx.tap()
+                _state.update { it.copy(selected = tile) }
+            }
             selected.wordIndex == tile.wordIndex -> {
+                container.sfx.correct()
                 container.speaker.speak(words[tile.wordIndex].hanzi)
                 val matched = s.matched + tile.wordIndex
                 _state.update { it.copy(matched = matched, selected = null) }
@@ -193,6 +211,7 @@ class VocabViewModel(private val container: AppContainer, private val categoryId
                 }
             }
             else -> {
+                container.sfx.wrong()
                 _state.update { it.copy(mistakes = it.mistakes + 1, selected = null, wrong = setOf(selected, tile)) }
                 viewModelScope.launch {
                     delay(600)
@@ -266,7 +285,6 @@ private fun LearnPhase(vm: VocabViewModel, state: VocabState) {
 
 @Composable
 private fun WordPractice(vm: VocabViewModel, state: VocabState, modifier: Modifier) {
-    val word = vm.words[state.index]
     val speakerState by vm.speakerState.collectAsStateWithLifecycle()
     val listening by vm.listening.collectAsStateWithLifecycle()
     val withMic = rememberMicPermission(onDenied = vm::micDenied)
@@ -280,20 +298,32 @@ private fun WordPractice(vm: VocabViewModel, state: VocabState, modifier: Modifi
     ) {
         ProgressHeader(state.index + 1, vm.words.size)
         TtsWarning(speakerState)
-        Card(Modifier.fillMaxWidth()) {
-            Column(
-                Modifier.fillMaxWidth().padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(word.emoji, fontSize = 80.sp)
-                HanziBlock(word.hanzi, word.pinyin, word.thai, hanziSize = 48)
-                if (word.english.isNotEmpty()) {
-                    Text(
-                        word.english,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
+        // The word card slides in from the side the learner is moving towards.
+        AnimatedContent(
+            targetState = state.index,
+            transitionSpec = {
+                val dir = if (targetState > initialState) 1 else -1
+                (slideInHorizontally { it * dir / 2 } + fadeIn()) togetherWith
+                    (slideOutHorizontally { -it * dir / 2 } + fadeOut())
+            },
+            label = "wordCard",
+        ) { index ->
+            val shown = vm.words[index]
+            Card(Modifier.fillMaxWidth().pop(vm.passed(state, index), amount = 0.04f)) {
+                Column(
+                    Modifier.fillMaxWidth().padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(shown.emoji, fontSize = 80.sp)
+                    HanziBlock(shown.hanzi, shown.pinyin, shown.thai, hanziSize = 48)
+                    if (shown.english.isNotEmpty()) {
+                        Text(
+                            shown.english,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
         }
@@ -308,7 +338,7 @@ private fun WordPractice(vm: VocabViewModel, state: VocabState, modifier: Modifi
             Text("เครื่องนี้ฟังเสียงไม่ได้ ฟังแล้วกดถัดไปได้เลย", style = MaterialTheme.typography.bodyMedium)
         }
         state.scores[state.index]?.let { best ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.appear()) {
                 Text("คะแนนออกเสียง $best  ", fontWeight = FontWeight.Bold)
                 StarsRow(GameRules.starsForScore(best))
                 if (vm.passed(state)) Text("  ผ่าน ✓", fontWeight = FontWeight.Bold, color = Correct)
@@ -340,12 +370,12 @@ private fun LearnNavigation(vm: VocabViewModel, state: VocabState) {
         }
         Spacer(Modifier.height(8.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(
+            GameOutlinedButton(
                 onClick = vm::previous,
                 enabled = state.index > 0,
                 modifier = Modifier.weight(1f),
             ) { Text("◀ ย้อนกลับ") }
-            Button(onClick = vm::next, enabled = canGoNext, modifier = Modifier.weight(1f)) {
+            GameButton(onClick = vm::next, enabled = canGoNext, modifier = Modifier.weight(1f)) {
                 Text(
                     when {
                         !canGoNext -> "ถัดไป 🔒"
@@ -369,8 +399,9 @@ private fun MatchPhase(vm: VocabViewModel, state: VocabState) {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(state.tiles, key = { it.id }) { tile ->
+            itemsIndexed(state.tiles, key = { _, t -> "${state.round}-${t.id}" }) { i, tile ->
                 MatchTileCard(
+                    modifier = Modifier.appear(i * 40),
                     word = vm.words[tile.wordIndex],
                     tile = tile,
                     selected = state.selected == tile,
@@ -385,6 +416,7 @@ private fun MatchPhase(vm: VocabViewModel, state: VocabState) {
 
 @Composable
 private fun MatchTileCard(
+    modifier: Modifier,
     word: Word,
     tile: MatchTile,
     selected: Boolean,
@@ -392,16 +424,26 @@ private fun MatchTileCard(
     wrong: Boolean,
     onClick: () -> Unit,
 ) {
-    val color = when {
-        wrong -> Wrong
-        matched -> Correct
-        selected -> MaterialTheme.colorScheme.secondary
-        else -> MaterialTheme.colorScheme.surfaceContainerHigh
-    }
-    Card(
+    val color by animateColorAsState(
+        when {
+            wrong -> Wrong
+            matched -> Correct
+            selected -> MaterialTheme.colorScheme.secondary
+            else -> MaterialTheme.colorScheme.surfaceContainerHigh
+        },
+        label = "tileColor",
+    )
+    val alpha by animateFloatAsState(if (matched) 0.4f else 1f, tween(400, delayMillis = 250), label = "tileAlpha")
+    GameCard(
         onClick = onClick,
         enabled = !matched,
-        modifier = Modifier.fillMaxWidth().height(120.dp).alpha(if (matched) 0.4f else 1f),
+        sound = false,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(120.dp)
+            .answerFeedback(correct = matched, wrong = wrong)
+            .pop(selected, amount = 0.05f)
+            .alpha(alpha),
         colors = CardDefaults.cardColors(containerColor = color, disabledContainerColor = color),
     ) {
         Column(

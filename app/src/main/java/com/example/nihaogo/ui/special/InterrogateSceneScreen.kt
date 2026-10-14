@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,10 +52,15 @@ import com.example.nihaogo.data.content.Suspect
 import com.example.nihaogo.data.content.clues
 import com.example.nihaogo.data.user.SpecialRules
 import com.example.nihaogo.speech.Heard
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.MicButton
 import com.example.nihaogo.ui.common.PinyinText
 import com.example.nihaogo.ui.common.appViewModel
+import com.example.nihaogo.ui.common.appear
+import com.example.nihaogo.ui.common.pop
 import com.example.nihaogo.ui.common.rememberMicPermission
+import com.example.nihaogo.ui.common.shake
 import com.example.nihaogo.ui.theme.Correct
 import com.example.nihaogo.ui.theme.Gold
 import com.example.nihaogo.ui.theme.Wrong
@@ -174,6 +178,7 @@ class InterrogateSceneViewModel(container: AppContainer, modeId: String, index: 
     fun dismissAccuse() = _state.update { it.copy(accusing = false) }
 
     fun accuse(id: String) {
+        sfx.answer(id == mode.culprit)
         if (id == mode.culprit) {
             mode.confession?.let { speak(it.hanzi) }
             _state.update { it.copy(accusing = false, solved = true) }
@@ -223,7 +228,7 @@ fun InterrogateSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
         ) {
             item { CaseHeader(vm, state) }
             item { ClueNotebook(vm.clues) }
-            items(state.log) { entry -> LogEntry(vm, entry) }
+            items(state.log) { entry -> Box(Modifier.animateItem()) { LogEntry(vm, entry) } }
             if (state.busy) {
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -242,7 +247,7 @@ fun InterrogateSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
                     }
                 }
             }
-            if (state.solved) item { Solved(vm) }
+            if (state.solved) item { Solved(vm, Modifier.appear()) }
         }
     }
 
@@ -253,7 +258,7 @@ fun InterrogateSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     vm.suspects.filter { it.id !in state.cleared }.forEach { s ->
-                        Card(onClick = { vm.accuse(s.id) }, modifier = Modifier.fillMaxWidth()) {
+                        GameCard(onClick = { vm.accuse(s.id) }, sound = false, modifier = Modifier.fillMaxWidth()) {
                             Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Text(s.emoji, fontSize = 32.sp)
                                 Column(Modifier.padding(start = 12.dp)) {
@@ -292,9 +297,9 @@ private fun SuspectPicker(vm: InterrogateSceneViewModel, state: InterrogateState
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         vm.suspects.forEach { s ->
             val selected = s.id == state.selected
-            Card(
+            GameCard(
                 onClick = { vm.select(s.id) },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).pop(selected, amount = 0.05f),
                 border = if (selected) BorderStroke(3.dp, Gold) else null,
                 colors = CardDefaults.cardColors(
                     containerColor = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -341,7 +346,12 @@ private fun LogEntry(vm: InterrogateSceneViewModel, entry: CaseEntry) {
         }
         is CaseEntry.Answered -> SuspectLine(vm.suspect(entry.suspectId), entry.line, onSpeak = { vm.speak(entry.line.hanzi) })
         is CaseEntry.Cleared -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("❌ ${vm.suspect(entry.suspectId).name} ไม่ใช่คนร้าย!", fontWeight = FontWeight.Bold, color = Wrong)
+            Text(
+                "❌ ${vm.suspect(entry.suspectId).name} ไม่ใช่คนร้าย!",
+                fontWeight = FontWeight.Bold,
+                color = Wrong,
+                modifier = Modifier.shake(true),
+            )
             SuspectLine(vm.suspect(entry.suspectId), entry.alibi, onSpeak = { vm.speak(entry.alibi.hanzi) })
         }
         is CaseEntry.Feedback -> Text("💡 ${entry.text}", color = Wrong, style = MaterialTheme.typography.bodyMedium)
@@ -357,15 +367,21 @@ private fun SuspectLine(suspect: Suspect, line: Line, onSpeak: () -> Unit) {
 }
 
 @Composable
-private fun Solved(vm: InterrogateSceneViewModel) {
+private fun Solved(vm: InterrogateSceneViewModel, modifier: Modifier = Modifier) {
     val culprit = vm.suspect(vm.mode.culprit)
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("🎉 ถูกต้อง! ${culprit.name} เป็นคนเอาหยกไป", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = Correct)
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(
+            "🎉 ถูกต้อง! ${culprit.name} เป็นคนเอาหยกไป",
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleMedium,
+            color = Correct,
+            modifier = Modifier.pop(true, amount = 0.12f),
+        )
         vm.mode.confession?.let { SuspectLine(culprit, it, onSpeak = { vm.speak(it.hanzi) }) }
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)) {
             Text(vm.mode.endingTh, modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.bodyLarge)
         }
-        Button(onClick = vm::complete, modifier = Modifier.fillMaxWidth()) { Text("ปิดคดี ดูผลลัพธ์ 📁") }
+        GameButton(onClick = vm::complete, modifier = Modifier.fillMaxWidth()) { Text("ปิดคดี ดูผลลัพธ์ 📁") }
     }
 }
 
@@ -400,7 +416,7 @@ private fun AskBar(vm: InterrogateSceneViewModel, state: InterrogateState) {
                 }
             }
             val canAccuse = vm.canAccuse(state)
-            Button(
+            GameButton(
                 onClick = vm::openAccuse,
                 enabled = canAccuse && !state.busy,
                 modifier = Modifier.fillMaxWidth().alpha(if (canAccuse) 1f else 0.6f),

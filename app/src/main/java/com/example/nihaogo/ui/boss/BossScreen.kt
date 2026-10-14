@@ -1,6 +1,8 @@
 package com.example.nihaogo.ui.boss
 
+import android.app.Activity
 import android.util.Log
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +18,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,12 +33,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.nihaogo.AppContainer
+import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.ai.BossLine
 import com.example.nihaogo.data.content.Boss
 import com.example.nihaogo.data.content.Category
@@ -46,8 +49,12 @@ import com.example.nihaogo.data.content.SpecialMode
 import com.example.nihaogo.data.content.Step
 import com.example.nihaogo.data.content.Word
 import com.example.nihaogo.data.user.GameRules
+import com.example.nihaogo.data.user.SpecialRules
 import com.example.nihaogo.data.user.UserProgress
+import com.example.nihaogo.monetization.RewardedAds
 import com.example.nihaogo.speech.Heard
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameOutlinedButton
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.InkScaffold
 import com.example.nihaogo.ui.common.MicButton
@@ -56,6 +63,7 @@ import com.example.nihaogo.ui.common.SpeakButton
 import com.example.nihaogo.ui.common.StepResult
 import com.example.nihaogo.ui.common.StepResultPanel
 import com.example.nihaogo.ui.common.appViewModel
+import com.example.nihaogo.ui.common.appear
 import com.example.nihaogo.ui.common.recordScene
 import com.example.nihaogo.ui.common.recordStep
 import com.example.nihaogo.ui.common.rememberMicPermission
@@ -67,6 +75,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -88,13 +97,23 @@ data class BossState(
     val hintShown: Boolean = false,
     val notice: String? = null,
     val result: StepResult? = null,
+    /** Replaying after a loss: the player confirms the free retry or the fee before the boss starts. */
+    val retryGate: Boolean = false,
 )
 
 /** Whose boss conversation this is, which decides where the result is saved. */
 sealed interface BossTarget {
-    data class CategoryBoss(val categoryId: String) : BossTarget
+    /** Identifies this boss in [UserProgress.bossRetry]. */
+    val key: String
+
+    data class CategoryBoss(val categoryId: String) : BossTarget {
+        override val key get() = categoryId
+    }
+
     /** The customer at the end of a career ([Scene.Roleplay]). */
-    data class SpecialScene(val modeId: String, val sceneIndex: Int) : BossTarget
+    data class SpecialScene(val modeId: String, val sceneIndex: Int) : BossTarget {
+        override val key get() = SpecialRules.sceneKey(modeId, sceneIndex)
+    }
 }
 
 class BossViewModel(private val container: AppContainer, private val target: BossTarget) : ViewModel() {
@@ -128,7 +147,42 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
     private var retry: (() -> Unit)? = null
 
     init {
-        start()
+        open()
+    }
+
+    /** Starts right away unless this is a replay after a loss, which goes through the retry gate. */
+    private fun open() {
+        viewModelScope.launch {
+            val entry = GameRules.bossEntry(container.progress.progress.first(), target.key, GameRules.today())
+            if (entry == GameRules.BossEntry.Free) start() else _state.value = BossState(busy = false, retryGate = true)
+        }
+    }
+
+    fun entry(progress: UserProgress): GameRules.BossEntry =
+        GameRules.bossEntry(progress, target.key, GameRules.today())
+
+    fun adsLeft(progress: UserProgress): Int = GameRules.adsLeft(progress, GameRules.today())
+
+    fun payAndStart() {
+        viewModelScope.launch {
+            var paid = false
+            container.progress.update { p -> GameRules.payForBoss(p, target.key, GameRules.today())?.also { paid = true } ?: p }
+            if (paid) {
+                _state.value = BossState()
+                start()
+            } else {
+                container.sfx.wrong()
+                _state.update { it.copy(notice = "เหรียญไม่พอ ต้องใช้ ${GameRules.BOSS_RETRY_COST} 🪙") }
+            }
+        }
+    }
+
+    fun watchAd(activity: Activity) {
+        viewModelScope.launch {
+            val outcome = container.rewardedAds.watchForCoins(activity)
+            if (outcome == RewardedAds.Outcome.Rewarded) container.sfx.play(Sfx.Sound.Coin)
+            _state.update { it.copy(notice = outcome.messageTh) }
+        }
     }
 
     private fun start() = launchCall(onRetry = ::start) {
@@ -149,8 +203,10 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
     }
 
     private fun submit(text: String): Unit = launchCall(onRetry = { submit(text) }) {
+        if (_state.value.answered == 0) container.progress.update { GameRules.markBossAttempt(it, target.key) }
         val isFinal = _state.value.answered + 1 >= GameRules.BOSS_ROUNDS
         val judgement = engine.answer(text, isFinal)
+        container.sfx.answer(judgement.correct)
         _state.update {
             val added = buildList {
                 if (judgement.feedbackTh.isNotBlank()) add(ChatItem.Feedback(judgement.correct, judgement.feedbackTh))
@@ -175,6 +231,7 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
             is BossTarget.CategoryBoss -> container.progress.recordStep(target.categoryId, Step.Boss, stars)
             is BossTarget.SpecialScene -> container.progress.recordScene(mode!!, target.sceneIndex, stars)
         }
+        if (stars > 0) container.progress.update { GameRules.markBossWon(it, target.key) }
         _state.update { it.copy(result = StepResult(correct * 100 / GameRules.BOSS_ROUNDS, stars, outcome.coinsEarned)) }
     }
 
@@ -192,6 +249,7 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
         viewModelScope.launch {
             var paid = false
             container.progress.update { p -> GameRules.spend(p, GameRules.HINT_COST)?.also { paid = true } ?: p }
+            if (paid) container.sfx.play(Sfx.Sound.Coin) else container.sfx.wrong()
             _state.update {
                 if (paid) it.copy(hintShown = true, notice = null)
                 else it.copy(notice = "เหรียญไม่พอ ต้องใช้ ${GameRules.HINT_COST} 🪙 (เก็บเหรียญได้จากการผ่านด่าน)")
@@ -212,7 +270,7 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
     fun restart() {
         engine = container.bossEngine(boss, knownWords)
         _state.value = BossState()
-        start()
+        open()
     }
 
     private fun launchCall(onRetry: () -> Unit, block: suspend () -> Unit) {
@@ -243,8 +301,12 @@ fun BossScreen(target: BossTarget, onBack: () -> Unit) {
 
     InkScaffold(
         topBar = { GameTopBar(vm.title, progress.coins, onBack) },
-        bottomBar = { if (state.result == null) InputBar(vm, state) },
+        bottomBar = { if (state.result == null && !state.retryGate) InputBar(vm, state) },
     ) { padding ->
+        if (state.retryGate) {
+            RetryGatePanel(vm, state, progress, onBack, Modifier.padding(padding))
+            return@InkScaffold
+        }
         val result = state.result
         if (result != null) {
             StepResultPanel(
@@ -255,6 +317,7 @@ fun BossScreen(target: BossTarget, onBack: () -> Unit) {
                 onDone = onBack,
                 modifier = Modifier.padding(padding),
                 failedDoneLabel = vm.failedDoneLabel,
+                bigWin = true,
             )
             return@InkScaffold
         }
@@ -272,10 +335,12 @@ fun BossScreen(target: BossTarget, onBack: () -> Unit) {
         ) {
             item { BossHeader(vm, state) }
             items(state.messages) { item ->
-                when (item) {
-                    is ChatItem.BossSays -> BossBubble(boss.emoji, item.line, onSpeak = { vm.speak(item.line) })
-                    is ChatItem.PlayerSays -> PlayerBubble(item.text)
-                    is ChatItem.Feedback -> FeedbackLine(item)
+                Box(Modifier.animateItem()) {
+                    when (item) {
+                        is ChatItem.BossSays -> BossBubble(boss.emoji, item.line, onSpeak = { vm.speak(item.line) })
+                        is ChatItem.PlayerSays -> PlayerBubble(item.text)
+                        is ChatItem.Feedback -> FeedbackLine(item)
+                    }
                 }
             }
             if (state.busy) {
@@ -296,6 +361,51 @@ fun BossScreen(target: BossTarget, onBack: () -> Unit) {
                     }
                 }
             }
+        }
+    }
+}
+
+/** Shown before a replay after a loss: today's free retry, or the coin fee (with an ad for coins when short). */
+@Composable
+private fun RetryGatePanel(
+    vm: BossViewModel,
+    state: BossState,
+    progress: UserProgress,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val activity = LocalActivity.current
+    val entry = vm.entry(progress)
+    val cost = if (entry == GameRules.BossEntry.PaidRetry) GameRules.BOSS_RETRY_COST else 0
+    val adsLeft = vm.adsLeft(progress)
+    Box(modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(vm.boss.emoji, fontSize = 72.sp)
+            Text("ท้าบอสอีกครั้ง", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(
+                when (entry) {
+                    GameRules.BossEntry.PaidRetry ->
+                        "ใช้สิทธิ์เล่นซ้ำฟรีของวันนี้ไปแล้ว ครั้งนี้ใช้ ${GameRules.BOSS_RETRY_COST} 🪙"
+                    else -> "เล่นซ้ำหลังแพ้ได้ฟรีวันละ ${GameRules.FREE_BOSS_RETRIES_PER_DAY} ครั้ง " +
+                        "จากนั้นครั้งละ ${GameRules.BOSS_RETRY_COST} 🪙"
+                },
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+            )
+            GameButton(
+                onClick = vm::payAndStart,
+                enabled = progress.coins >= cost,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(if (cost > 0) "จ่าย $cost 🪙 แล้วเริ่มเล่น" else "เล่นซ้ำฟรี")
+            }
+            if (progress.coins < cost && adsLeft > 0 && activity != null) {
+                GameOutlinedButton(onClick = { vm.watchAd(activity) }, modifier = Modifier.fillMaxWidth()) {
+                    Text("📺 ดูโฆษณารับ +${GameRules.AD_REWARD} 🪙 (วันนี้เหลือ $adsLeft ครั้ง)")
+                }
+            }
+            state.notice?.let { Text(it, textAlign = TextAlign.Center) }
+            TextButton(onClick = onBack) { Text(vm.failedDoneLabel) }
         }
     }
 }
@@ -361,7 +471,7 @@ private fun FeedbackLine(item: ChatItem.Feedback) {
         (if (item.correct) "✅ " else "❌ ") + item.text,
         color = if (item.correct) Correct else Wrong,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().appear(),
     )
 }
 
@@ -374,7 +484,7 @@ private fun InputBar(vm: BossViewModel, state: BossState) {
     Surface(tonalElevation = 3.dp, modifier = Modifier.navigationBarsPadding().imePadding()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (state.hintShown && current != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.appear()) {
                     Column(Modifier.weight(1f)) {
                         Text("💡 ลองตอบว่า", style = MaterialTheme.typography.labelMedium)
                         PinyinText(current.hintHanzi, pinyin = current.hintPinyin, fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -399,7 +509,7 @@ private fun InputBar(vm: BossViewModel, state: BossState) {
                 }
             }
             if (!state.hintShown && current != null && current.hintHanzi.isNotBlank()) {
-                Button(onClick = vm::showHint, enabled = !state.busy, modifier = Modifier.fillMaxWidth()) {
+                GameButton(onClick = vm::showHint, enabled = !state.busy, modifier = Modifier.fillMaxWidth()) {
                     Text("💡 ขอคำใบ้ (${GameRules.HINT_COST} 🪙)")
                 }
             }

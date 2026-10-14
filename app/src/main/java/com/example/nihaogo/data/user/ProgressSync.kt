@@ -109,6 +109,12 @@ class ProgressSync(
         "progress" to p.categories.mapValues { (_, c) -> c.stars.mapKeys { it.key.name.lowercase() } },
         "unlocked" to p.unlocked.sorted(),
         "special" to p.special,
+        "bossRetry" to p.bossRetry.sorted(),
+        "daily" to mapOf(
+            "day" to p.daily.day,
+            "freeRetries" to p.daily.freeRetries,
+            "adsWatched" to p.daily.adsWatched,
+        ),
     )
 
     private fun decode(data: Map<String, Any?>): UserProgress = UserProgress(
@@ -123,6 +129,14 @@ class ProgressSync(
         },
         unlocked = (data["unlocked"] as? List<*>).orEmpty().map { it.toString() }.toSet(),
         special = data["special"].asMap().entries.associate { (key, stars) -> key.toString() to stars.asInt() },
+        bossRetry = (data["bossRetry"] as? List<*>).orEmpty().map { it.toString() }.toSet(),
+        daily = data["daily"].asMap().let { daily ->
+            DailyUsage(
+                day = daily["day"] as? String ?: "",
+                freeRetries = daily["freeRetries"].asInt(),
+                adsWatched = daily["adsWatched"].asInt(),
+            )
+        },
     )
 
     private fun Any?.asMap(): Map<*, *> = this as? Map<*, *> ?: emptyMap<String, Any>()
@@ -131,6 +145,7 @@ class ProgressSync(
 
     private companion object {
         const val TAG = "ProgressSync"
-        val SYNCED_FIELDS = listOf("coins", "premium", "progress", "unlocked", "special", "updatedAt")
+        val SYNCED_FIELDS =
+            listOf("coins", "premium", "progress", "unlocked", "special", "bossRetry", "daily", "updatedAt")
     }
 }

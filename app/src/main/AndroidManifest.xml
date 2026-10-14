@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Short buzz on a wrong answer (normal permission, no prompt). -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Package visibility (Android 11+) so we can find the speech recognizer and TTS engines. -->
     <queries>
@@ -25,6 +27,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NiHaoGo">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

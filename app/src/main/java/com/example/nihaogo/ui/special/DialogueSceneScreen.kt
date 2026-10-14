@@ -1,5 +1,6 @@
 package com.example.nihaogo.ui.special
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -19,7 +19,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,9 +28,13 @@ import com.example.nihaogo.data.content.Line
 import com.example.nihaogo.data.content.ModeKind
 import com.example.nihaogo.data.content.Person
 import com.example.nihaogo.data.content.Scene
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.PinyinText
 import com.example.nihaogo.ui.common.ProgressHeader
+import com.example.nihaogo.ui.common.answerFeedback
 import com.example.nihaogo.ui.common.appViewModel
+import com.example.nihaogo.ui.common.appear
 import com.example.nihaogo.ui.theme.Correct
 import com.example.nihaogo.ui.theme.Wrong
 import kotlinx.coroutines.delay
@@ -70,6 +73,7 @@ class DialogueSceneViewModel(container: AppContainer, modeId: String, index: Int
         val s = _state.value
         val turn = scene.turns[s.turn]
         if (s.solved || option in s.tried) return
+        sfx.answer(option == turn.answer)
         if (option == turn.answer) {
             speak(turn.reply.hanzi)
             _state.update { it.copy(solved = true, points = it.points + if (it.tried.isEmpty()) 1 else 0) }
@@ -82,6 +86,7 @@ class DialogueSceneViewModel(container: AppContainer, modeId: String, index: Int
         val s = _state.value
         val task = scene.turns[s.turn].task ?: return
         if (!s.solved || s.taskSolved || option in s.taskTried) return
+        sfx.answer(option == task.answer)
         if (option == task.answer) {
             speak(task.options[option].hanzi)
             _state.update { it.copy(taskSolved = true, points = it.points + if (it.taskTried.isEmpty()) 1 else 0) }
@@ -147,11 +152,8 @@ fun DialogueSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
             turn.options.forEachIndexed { i, option ->
                 OptionCard(
                     line = option,
-                    color = when {
-                        state.solved && i == turn.answer -> Correct
-                        i in state.tried -> Wrong
-                        else -> null
-                    },
+                    right = state.solved && i == turn.answer,
+                    wrong = i in state.tried,
                     showThai = state.solved || i in state.tried,
                     onClick = { vm.choose(i) },
                 )
@@ -159,23 +161,34 @@ fun DialogueSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
 
             if (state.solved) {
                 vm.speaker(state.turn)?.let { Text("${it.emoji} ${it.name} ตอบว่า:", fontWeight = FontWeight.Bold) }
-                SpeechBubble(turn.reply, onSpeak = { vm.speak(turn.reply.hanzi) })
+                SpeechBubble(turn.reply, onSpeak = { vm.speak(turn.reply.hanzi) }, modifier = Modifier.appear())
                 if (turn.clueTh.isNotBlank()) ClueCard(turn.clueTh, isNew = true)
             }
 
             val task = turn.task
             if (state.solved && task != null) {
-                Text(task.promptTh, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    task.promptTh,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.appear(150),
+                )
+                Row(Modifier.fillMaxWidth().appear(250), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     task.options.forEachIndexed { i, option ->
-                        val color = when {
-                            state.taskSolved && i == task.answer -> Correct.copy(alpha = 0.35f)
-                            i in state.taskTried -> Wrong.copy(alpha = 0.35f)
-                            else -> MaterialTheme.colorScheme.surfaceContainerHigh
-                        }
-                        Card(
+                        val right = state.taskSolved && i == task.answer
+                        val wrong = i in state.taskTried
+                        val color by animateColorAsState(
+                            when {
+                                right -> Correct.copy(alpha = 0.35f)
+                                wrong -> Wrong.copy(alpha = 0.35f)
+                                else -> MaterialTheme.colorScheme.surfaceContainerHigh
+                            },
+                            label = "task",
+                        )
+                        GameCard(
                             onClick = { vm.chooseTask(i) },
-                            modifier = Modifier.weight(1f),
+                            sound = false,
+                            modifier = Modifier.weight(1f).answerFeedback(right, wrong),
                             colors = CardDefaults.cardColors(containerColor = color),
                         ) {
                             Column(Modifier.fillMaxWidth().padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -191,7 +204,7 @@ fun DialogueSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
             }
 
             if (vm.canGoNext(state)) {
-                Button(onClick = vm::next, modifier = Modifier.fillMaxWidth()) {
+                GameButton(onClick = vm::next, modifier = Modifier.fillMaxWidth().appear(200)) {
                     Text(if (state.turn < vm.scene.turns.lastIndex) "ถัดไป ▶" else "ดูผลลัพธ์")
                 }
             }
@@ -225,13 +238,20 @@ fun SpeechBubble(line: Line, onSpeak: () -> Unit, modifier: Modifier = Modifier)
 }
 
 @Composable
-private fun OptionCard(line: Line, color: Color?, showThai: Boolean, onClick: () -> Unit) {
-    Card(
+private fun OptionCard(line: Line, right: Boolean, wrong: Boolean, showThai: Boolean, onClick: () -> Unit) {
+    val color by animateColorAsState(
+        when {
+            right -> Correct.copy(alpha = 0.3f)
+            wrong -> Wrong.copy(alpha = 0.3f)
+            else -> MaterialTheme.colorScheme.surfaceContainerHigh
+        },
+        label = "option",
+    )
+    GameCard(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = color?.copy(alpha = 0.3f) ?: MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
+        sound = false,
+        modifier = Modifier.fillMaxWidth().answerFeedback(right, wrong),
+        colors = CardDefaults.cardColors(containerColor = color),
     ) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             PinyinText(line.hanzi, pinyin = line.pinyin, fontSize = 22.sp, fontWeight = FontWeight.Bold)

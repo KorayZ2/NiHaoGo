@@ -1,7 +1,9 @@
 package com.example.nihaogo.ui.profile
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,18 +15,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,11 +50,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import coil3.compose.AsyncImage
 import com.example.nihaogo.AppContainer
+import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.content.Step
 import com.example.nihaogo.data.user.Account
 import com.example.nihaogo.data.user.AccountManager.SignInResult
+import com.example.nihaogo.data.user.GameRules
 import com.example.nihaogo.data.user.GoogleCredentials
 import com.example.nihaogo.data.user.UserProgress
+import com.example.nihaogo.monetization.RewardedAds
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameOutlinedButton
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.InkScaffold
 import com.example.nihaogo.ui.common.appViewModel
@@ -67,6 +75,9 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(container: AppContainer) : ViewModel() {
     private val accounts = container.accounts
+    private val rewardedAds = container.rewardedAds
+    private val sfx = container.sfx
+    val settings = container.settings
     val account: StateFlow<Account?> = accounts.account
     val progress: StateFlow<UserProgress> = container.progress.progress
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserProgress())
@@ -98,6 +109,24 @@ class ProfileViewModel(container: AppContainer) : ViewModel() {
         accounts.resolveConflict(chosen)
         conflict = null
         _messages.send("ล็อกอินแล้ว ความคืบหน้าจะเก็บไว้ในบัญชี Google")
+    }
+
+    fun adsLeft(progress: UserProgress): Int = GameRules.adsLeft(progress, GameRules.today())
+
+    fun watchAd(activity: Activity) = runBusy("เปิดโฆษณาไม่สำเร็จ ลองใหม่อีกครั้งนะ") {
+        val outcome = rewardedAds.watchForCoins(activity)
+        if (outcome == RewardedAds.Outcome.Rewarded) sfx.play(Sfx.Sound.Coin)
+        _messages.send(outcome.messageTh)
+    }
+
+    fun setSoundOn(on: Boolean) {
+        settings.setSoundOn(on)
+        sfx.tap() // a preview, so the player hears what they turned on
+    }
+
+    fun setVibrateOn(on: Boolean) {
+        settings.setVibrateOn(on)
+        sfx.buzz()
     }
 
     fun signOut() = runBusy("ออกจากระบบไม่สำเร็จ ลองใหม่อีกครั้งนะ") {
@@ -148,8 +177,15 @@ fun ProfileScreen(onBack: () -> Unit) {
                 GuestCard(busy = vm.busy, onSignIn = { vm.signIn(context) })
             }
             StatsCard(progress, vm.categoryCount, vm.sceneCount)
+            val activity = LocalActivity.current
+            if (!progress.premium && activity != null) {
+                RewardedAdCard(adsLeft = vm.adsLeft(progress), busy = vm.busy, onWatch = { vm.watchAd(activity) })
+            }
+            val soundOn by vm.settings.soundOn.collectAsStateWithLifecycle()
+            val vibrateOn by vm.settings.vibrateOn.collectAsStateWithLifecycle()
+            SettingsCard(soundOn, vibrateOn, onSound = vm::setSoundOn, onVibrate = vm::setVibrateOn)
             if (!guest) {
-                OutlinedButton(
+                GameOutlinedButton(
                     onClick = { confirmSignOut = true },
                     enabled = !vm.busy,
                     modifier = Modifier.fillMaxWidth(),
@@ -242,7 +278,7 @@ private fun GuestCard(busy: Boolean, onSignIn: () -> Unit) {
                     "ล็อกอินด้วย Google แล้วเล่นต่อได้ทุกเครื่อง",
                 style = MaterialTheme.typography.bodyMedium,
             )
-            Button(onClick = onSignIn, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
+            GameButton(onClick = onSignIn, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
                 if (busy) {
                     CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                 } else {
@@ -264,6 +300,55 @@ private fun StatsCard(progress: UserProgress, categoryCount: Int, sceneCount: In
             StatRow("🕵️", "ฉากพิเศษที่ผ่านแล้ว", "${progress.scenesCleared}/$sceneCount")
             StatRow("🪙", "เหรียญ", "${progress.coins}")
         }
+    }
+}
+
+@Composable
+private fun RewardedAdCard(adsLeft: Int, busy: Boolean, onWatch: () -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("📺 ดูโฆษณารับเหรียญ", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(
+                "ดูจนจบได้ +${GameRules.AD_REWARD} 🪙 · วันนี้เหลือ $adsLeft/${GameRules.ADS_PER_DAY} ครั้ง",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            GameButton(onClick = onWatch, enabled = adsLeft > 0 && !busy, modifier = Modifier.fillMaxWidth()) {
+                Text(if (adsLeft > 0) "ดูโฆษณา" else "ครบแล้ว พรุ่งนี้มาใหม่นะ")
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsCard(soundOn: Boolean, vibrateOn: Boolean, onSound: (Boolean) -> Unit, onVibrate: (Boolean) -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("การตั้งค่า", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            SettingRow("🔔", "เสียงเอฟเฟกต์", "ตอบถูก ตอบผิด ได้ดาว และแตะปุ่ม", soundOn, onSound)
+            SettingRow("📳", "สั่นเมื่อตอบผิด", null, vibrateOn, onVibrate)
+            Text(
+                "เสียงอ่านภาษาจีนยังเปิดอยู่เสมอ ปรับความดังได้ที่ปุ่มเสียงของเครื่อง",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingRow(emoji: String, label: String, detail: String?, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().toggleable(value = checked, role = Role.Switch, onValueChange = onChange),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(emoji, fontSize = 22.sp)
+        Column(Modifier.padding(start = 12.dp).weight(1f)) {
+            Text(label)
+            if (detail != null) {
+                Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Switch(checked = checked, onCheckedChange = null)
     }
 }
 

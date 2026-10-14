@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,11 +29,13 @@ import com.example.nihaogo.data.content.Category
 import com.example.nihaogo.data.content.Step
 import com.example.nihaogo.data.user.GameRules
 import com.example.nihaogo.data.user.UserProgress
+import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.InkScaffold
 import com.example.nihaogo.ui.common.PinyinText
 import com.example.nihaogo.ui.common.StarsRow
 import com.example.nihaogo.ui.common.appViewModel
+import com.example.nihaogo.ui.common.appear
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -41,6 +43,9 @@ import kotlinx.coroutines.flow.stateIn
 class CategoryViewModel(container: AppContainer, categoryId: String) : ViewModel() {
     val category: Category = container.content.category(categoryId)
     val bossUsesAi: Boolean = container.gemini.isConfigured
+
+    /** The step cards drop in only on the first visit, not when coming back from a step. */
+    var introPlayed = false
     val progress: StateFlow<UserProgress> = container.progress.progress
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserProgress())
 }
@@ -50,6 +55,8 @@ fun CategoryScreen(categoryId: String, onBack: () -> Unit, onOpenStep: (Step) ->
     val vm = appViewModel { CategoryViewModel(it, categoryId) }
     val progress by vm.progress.collectAsStateWithLifecycle()
     val category = vm.category
+    val intro = !vm.introPlayed
+    LaunchedEffect(vm) { vm.introPlayed = true }
 
     InkScaffold(topBar = { GameTopBar(category.titleTh, progress.coins, onBack) }) { padding ->
         Column(
@@ -74,6 +81,7 @@ fun CategoryScreen(categoryId: String, onBack: () -> Unit, onOpenStep: (Step) ->
             Step.entries.forEach { step ->
                 val unlocked = GameRules.isStepUnlocked(category.id, step, progress)
                 StepCard(
+                    modifier = Modifier.appear(delayMillis = 80 + step.ordinal * 70, enabled = intro),
                     step = step,
                     subtitle = subtitleFor(step, category, vm.bossUsesAi),
                     stars = progress.stars(category.id, step),
@@ -94,11 +102,11 @@ private fun subtitleFor(step: Step, category: Category, usesAi: Boolean): String
 }
 
 @Composable
-private fun StepCard(step: Step, subtitle: String, stars: Int, unlocked: Boolean, onClick: () -> Unit) {
-    Card(
+private fun StepCard(modifier: Modifier, step: Step, subtitle: String, stars: Int, unlocked: Boolean, onClick: () -> Unit) {
+    GameCard(
         onClick = onClick,
         enabled = unlocked,
-        modifier = Modifier.fillMaxWidth().alpha(if (unlocked) 1f else 0.5f),
+        modifier = modifier.fillMaxWidth().alpha(if (unlocked) 1f else 0.5f),
         colors = CardDefaults.cardColors(
             containerColor = if (step == Step.Boss) MaterialTheme.colorScheme.secondary
             else MaterialTheme.colorScheme.surfaceContainerHigh,

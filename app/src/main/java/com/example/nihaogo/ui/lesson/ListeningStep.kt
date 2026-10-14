@@ -1,5 +1,6 @@
 package com.example.nihaogo.ui.lesson
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,6 +28,8 @@ import com.example.nihaogo.AppContainer
 import com.example.nihaogo.data.content.ListeningItem
 import com.example.nihaogo.data.content.Step
 import com.example.nihaogo.data.user.GameRules
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.HanziBlock
 import com.example.nihaogo.ui.common.InkScaffold
@@ -38,7 +39,9 @@ import com.example.nihaogo.ui.common.SpeakButton
 import com.example.nihaogo.ui.common.StepResult
 import com.example.nihaogo.ui.common.StepResultPanel
 import com.example.nihaogo.ui.common.TtsWarning
+import com.example.nihaogo.ui.common.answerFeedback
 import com.example.nihaogo.ui.common.appViewModel
+import com.example.nihaogo.ui.common.appear
 import com.example.nihaogo.ui.common.recordStep
 import com.example.nihaogo.ui.theme.Correct
 import com.example.nihaogo.ui.theme.Wrong
@@ -73,6 +76,7 @@ class ListeningViewModel(private val container: AppContainer, private val catego
         val s = _state.value
         if (s.solved || option in s.tried) return
         val correct = option == items[s.index].answer
+        container.sfx.answer(correct)
         _state.update {
             it.copy(
                 tried = it.tried + option,
@@ -147,21 +151,27 @@ fun ListeningStepScreen(categoryId: String, onBack: () -> Unit) {
             }
             Text(item.questionTh, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             item.options.forEachIndexed { i, option ->
-                val color = when {
-                    state.solved && i == item.answer -> Correct
-                    i in state.tried && i != item.answer -> Wrong
-                    else -> MaterialTheme.colorScheme.surfaceContainerHigh
-                }
-                Card(
+                val right = state.solved && i == item.answer
+                val wrong = i in state.tried && i != item.answer
+                val color by animateColorAsState(
+                    when {
+                        right -> Correct
+                        wrong -> Wrong
+                        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+                    },
+                    label = "option$i",
+                )
+                GameCard(
                     onClick = { vm.choose(i) },
-                    modifier = Modifier.fillMaxWidth(),
+                    sound = false,
+                    modifier = Modifier.fillMaxWidth().answerFeedback(right, wrong),
                     colors = CardDefaults.cardColors(containerColor = color),
                 ) {
                     PinyinText(option, modifier = Modifier.padding(16.dp), fontSize = 20.sp)
                 }
             }
             if (state.solved) {
-                Button(onClick = vm::next, modifier = Modifier.fillMaxWidth()) {
+                GameButton(onClick = vm::next, modifier = Modifier.fillMaxWidth().appear(200)) {
                     Text(if (state.index < vm.items.lastIndex) "ถัดไป" else "ดูผลลัพธ์")
                 }
             }

@@ -1,5 +1,11 @@
 package com.example.nihaogo.ui.special
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,7 +19,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -31,9 +36,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.data.content.Scene
 import com.example.nihaogo.data.content.Word
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.PinyinText
 import com.example.nihaogo.ui.common.ProgressHeader
 import com.example.nihaogo.ui.common.SpeakButton
+import com.example.nihaogo.ui.common.answerFeedback
 import com.example.nihaogo.ui.common.appViewModel
 import com.example.nihaogo.ui.theme.Correct
 import com.example.nihaogo.ui.theme.Gold
@@ -80,6 +88,7 @@ class FindSceneViewModel(container: AppContainer, modeId: String, index: Int) :
         if (s.newClue != null || s.wrong != null || wordIndex in s.found) return
         val target = targetWord(s)
         if (scene.words[wordIndex].hanzi != target.hanzi) {
+            sfx.wrong()
             _state.update { it.copy(wrong = wordIndex, mistakes = it.mistakes + 1) }
             viewModelScope.launch {
                 delay(600)
@@ -87,6 +96,7 @@ class FindSceneViewModel(container: AppContainer, modeId: String, index: Int) :
             }
             return
         }
+        sfx.correct()
         speak(target.hanzi)
         val clue = scene.targets[s.target].clueTh.ifBlank { null }
         _state.update { it.copy(found = it.found + wordIndex, newClue = clue, clues = it.clues + listOfNotNull(clue)) }
@@ -133,24 +143,34 @@ fun FindSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     ProgressHeader(state.found.size, vm.scene.targets.size)
-                    TargetCard(vm.targetWord(state), onSpeak = vm::speakTarget)
+                    // Each new target slides in so the player notices the word changed.
+                    AnimatedContent(
+                        targetState = vm.targetWord(state),
+                        transitionSpec = { (slideInVertically { it / 2 } + fadeIn()) togetherWith fadeOut() },
+                        label = "target",
+                    ) { word -> TargetCard(word, onSpeak = vm::speakTarget) }
                     state.newClue?.let { clue ->
                         ClueCard(clue, isNew = true)
-                        Button(onClick = vm::advance, modifier = Modifier.fillMaxWidth()) { Text("จดเบาะแสแล้ว ไปต่อ ▶") }
+                        GameButton(onClick = vm::advance, modifier = Modifier.fillMaxWidth()) { Text("จดเบาะแสแล้ว ไปต่อ ▶") }
                     }
                 }
             }
             items(state.layout, key = { it }) { wordIndex ->
                 val word = vm.scene.words[wordIndex]
                 val found = wordIndex in state.found
-                val color = when {
-                    state.wrong == wordIndex -> Wrong.copy(alpha = 0.5f)
-                    found -> Correct.copy(alpha = 0.3f)
-                    else -> MaterialTheme.colorScheme.surfaceContainerHigh
-                }
-                Card(
+                val wrong = state.wrong == wordIndex
+                val color by animateColorAsState(
+                    when {
+                        wrong -> Wrong.copy(alpha = 0.5f)
+                        found -> Correct.copy(alpha = 0.3f)
+                        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+                    },
+                    label = "item",
+                )
+                GameCard(
                     onClick = { vm.tap(wordIndex) },
-                    modifier = Modifier.fillMaxWidth().height(96.dp),
+                    sound = false,
+                    modifier = Modifier.fillMaxWidth().height(96.dp).answerFeedback(found, wrong),
                     colors = CardDefaults.cardColors(containerColor = color),
                     border = BorderStroke(1.dp, Gold.copy(alpha = 0.6f)),
                 ) {

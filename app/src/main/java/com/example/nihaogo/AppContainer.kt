@@ -1,6 +1,8 @@
 package com.example.nihaogo
 
 import android.content.Context
+import com.example.nihaogo.audio.AppSettings
+import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.ai.AiBossEngine
 import com.example.nihaogo.data.ai.AiInterrogation
 import com.example.nihaogo.data.ai.BossEngine
@@ -18,6 +20,7 @@ import com.example.nihaogo.data.user.AuthRepository
 import com.example.nihaogo.data.user.LocalProgressRepository
 import com.example.nihaogo.data.user.ProgressRepository
 import com.example.nihaogo.data.user.ProgressSync
+import com.example.nihaogo.monetization.RewardedAds
 import com.example.nihaogo.speech.Speaker
 import com.example.nihaogo.speech.SpeechInput
 
@@ -32,7 +35,11 @@ class AppContainer(context: Context) {
     val accounts = AccountManager(auth, progress, progressSync)
     val speaker by lazy { Speaker(appContext) }
     val speechInput by lazy { SpeechInput(appContext) }
+    val settings = AppSettings(appContext)
+    // Created up front so the sounds have finished loading by the first tap.
+    val sfx = Sfx(appContext, settings)
     val gemini = GeminiClient(BuildConfig.GEMINI_API_KEY, BuildConfig.GEMINI_MODEL)
+    val rewardedAds = RewardedAds(appContext, BuildConfig.ADMOB_REWARDED_ID, progress)
 
     fun bossEngine(category: Category): BossEngine = bossEngine(category.boss, category.words)
 

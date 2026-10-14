@@ -15,5 +15,6 @@ class NiHaoGoApp : Application() {
         super.onCreate()
         container = AppContainer(this)
         container.progressSync.start(appScope)
+        container.rewardedAds.start(appScope)
     }
 }

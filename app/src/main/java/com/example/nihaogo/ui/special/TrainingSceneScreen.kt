@@ -1,5 +1,12 @@
 package com.example.nihaogo.ui.special
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -30,12 +36,16 @@ import com.example.nihaogo.data.content.Scene
 import com.example.nihaogo.data.user.GameRules
 import com.example.nihaogo.speech.ChineseText
 import com.example.nihaogo.speech.Heard
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.HanziBlock
 import com.example.nihaogo.ui.common.MicButton
 import com.example.nihaogo.ui.common.ProgressHeader
 import com.example.nihaogo.ui.common.SpeakButton
 import com.example.nihaogo.ui.common.StarsRow
+import com.example.nihaogo.ui.common.answerFeedback
 import com.example.nihaogo.ui.common.appViewModel
+import com.example.nihaogo.ui.common.appear
 import com.example.nihaogo.ui.common.rememberMicPermission
 import com.example.nihaogo.ui.theme.Correct
 import com.example.nihaogo.ui.theme.Wrong
@@ -81,6 +91,7 @@ class TrainingSceneViewModel(container: AppContainer, modeId: String, index: Int
                 is Heard.Failed -> _state.update { it.copy(message = heard.messageTh) }
                 is Heard.Text -> {
                     val score = heard.candidates.maxOf { ChineseText.similarityScore(words[i].hanzi, it) }
+                    sfx.answer(score >= GameRules.SPEECH_PASS_SCORE)
                     _state.update {
                         it.copy(
                             scores = it.scores + (i to maxOf(score, it.scores[i] ?: 0)),
@@ -114,6 +125,7 @@ class TrainingSceneViewModel(container: AppContainer, modeId: String, index: Int
     fun choose(wordIndex: Int) {
         val s = _state.value
         if (s.solved || wordIndex in s.tried) return
+        sfx.answer(wordIndex == s.order[s.index])
         if (wordIndex == s.order[s.index]) {
             _state.update { it.copy(solved = true, quizFirstTry = it.quizFirstTry + if (it.tried.isEmpty()) 1 else 0) }
         } else {
@@ -165,10 +177,16 @@ private fun Learn(vm: TrainingSceneViewModel, state: TrainingState) {
     LaunchedEffect(state.index) { vm.speak(word.hanzi) }
 
     ProgressHeader(state.index + 1, vm.words.size)
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(word.emoji, fontSize = 72.sp)
-            HanziBlock(word.hanzi, word.pinyin, word.thai, hanziSize = 44)
+    AnimatedContent(
+        targetState = word,
+        transitionSpec = { (slideInHorizontally { it / 2 } + fadeIn()) togetherWith (slideOutHorizontally { -it / 2 } + fadeOut()) },
+        label = "trainingWord",
+    ) { shown ->
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(shown.emoji, fontSize = 72.sp)
+                HanziBlock(shown.hanzi, shown.pinyin, shown.thai, hanziSize = 44)
+            }
         }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -182,13 +200,13 @@ private fun Learn(vm: TrainingSceneViewModel, state: TrainingState) {
         textAlign = TextAlign.Center,
     )
     state.scores[state.index]?.let { best ->
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.appear()) {
             Text("คะแนนออกเสียง $best  ", fontWeight = FontWeight.Bold)
             StarsRow(GameRules.starsForScore(best))
         }
     }
     state.message?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
-    Button(onClick = vm::nextWord, modifier = Modifier.fillMaxWidth()) {
+    GameButton(onClick = vm::nextWord, modifier = Modifier.fillMaxWidth()) {
         Text(if (state.index < vm.words.lastIndex) "ถัดไป ▶" else "ไปทำแบบทดสอบ ▶")
     }
 }
@@ -209,14 +227,20 @@ private fun Quiz(vm: TrainingSceneViewModel, state: TrainingState) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             pair.forEach { choice ->
                 val option = vm.words[choice]
-                val color = when {
-                    state.solved && choice == state.order[state.index] -> Correct.copy(alpha = 0.35f)
-                    choice in state.tried -> Wrong.copy(alpha = 0.35f)
-                    else -> MaterialTheme.colorScheme.surfaceContainerHigh
-                }
-                Card(
+                val right = state.solved && choice == state.order[state.index]
+                val wrong = choice in state.tried
+                val color by animateColorAsState(
+                    when {
+                        right -> Correct.copy(alpha = 0.35f)
+                        wrong -> Wrong.copy(alpha = 0.35f)
+                        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+                    },
+                    label = "choice",
+                )
+                GameCard(
                     onClick = { vm.choose(choice) },
-                    modifier = Modifier.weight(1f).height(110.dp),
+                    sound = false,
+                    modifier = Modifier.weight(1f).height(110.dp).answerFeedback(right, wrong),
                     colors = CardDefaults.cardColors(containerColor = color),
                 ) {
                     Column(
@@ -232,8 +256,8 @@ private fun Quiz(vm: TrainingSceneViewModel, state: TrainingState) {
         }
     }
     if (state.solved) {
-        HanziBlock(word.hanzi, word.pinyin, thai = null, hanziSize = 32)
-        Button(onClick = vm::nextQuestion, modifier = Modifier.fillMaxWidth()) {
+        HanziBlock(word.hanzi, word.pinyin, thai = null, hanziSize = 32, modifier = Modifier.appear())
+        GameButton(onClick = vm::nextQuestion, modifier = Modifier.fillMaxWidth()) {
             Text(if (state.index < state.order.lastIndex) "ข้อต่อไป ▶" else "ดูผลลัพธ์")
         }
     }

@@ -8,6 +8,7 @@ plugins {
 }
 
 // Secrets live in local.properties (not committed): GEMINI_API_KEY=..., optional GEMINI_MODEL=...
+// AdMob uses Google's test IDs unless ADMOB_APP_ID / ADMOB_REWARDED_ID are set there.
 val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) file.inputStream().use { load(it) }
@@ -35,6 +36,12 @@ android {
         buildConfigField(
             "String", "GEMINI_MODEL",
             "\"${localProperties.getProperty("GEMINI_MODEL", "gemini-3.5-flash-lite")}\""
+        )
+        manifestPlaceholders["admobAppId"] =
+            localProperties.getProperty("ADMOB_APP_ID", "ca-app-pub-3940256099942544~3347511713")
+        buildConfigField(
+            "String", "ADMOB_REWARDED_ID",
+            "\"${localProperties.getProperty("ADMOB_REWARDED_ID", "ca-app-pub-3940256099942544/5224354917")}\""
         )
     }
 
@@ -81,6 +88,7 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.play.services.ads)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

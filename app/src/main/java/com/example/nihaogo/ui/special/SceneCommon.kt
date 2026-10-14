@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -38,12 +37,16 @@ import com.example.nihaogo.data.user.GameRules
 import com.example.nihaogo.speech.Speaker
 import com.example.nihaogo.ui.boss.BossScreen
 import com.example.nihaogo.ui.boss.BossTarget
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.InkScaffold
 import com.example.nihaogo.ui.common.PinyinText
 import com.example.nihaogo.ui.common.StepResult
 import com.example.nihaogo.ui.common.StepResultPanel
 import com.example.nihaogo.ui.common.TtsWarning
+import com.example.nihaogo.ui.common.appear
+import com.example.nihaogo.ui.common.pop
 import com.example.nihaogo.ui.common.recordScene
 import com.example.nihaogo.ui.theme.Gold
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -92,6 +95,8 @@ abstract class SceneViewModel<S : Scene>(
 
     /** Clears the scene's own play state. */
     protected abstract fun reset()
+
+    protected val sfx get() = container.sfx
 
     protected fun finish(score: Int, stars: Int = GameRules.starsForScore(score)) {
         viewModelScope.launch {
@@ -190,14 +195,16 @@ private fun NewWordsIntro(
             }
         }
         Text("คำศัพท์ใหม่ในฉากนี้ (แตะเพื่อฟังเสียง)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        scene.words.forEach { word -> NewWordRow(word, onClick = { onSpeak(word.hanzi) }) }
-        Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) { Text("เริ่มเลย ▶") }
+        scene.words.forEachIndexed { i, word ->
+            NewWordRow(word, onClick = { onSpeak(word.hanzi) }, modifier = Modifier.appear(100 + i * 50))
+        }
+        GameButton(onClick = onStart, modifier = Modifier.fillMaxWidth()) { Text("เริ่มเลย ▶") }
     }
 }
 
 @Composable
-private fun NewWordRow(word: Word, onClick: () -> Unit) {
-    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+private fun NewWordRow(word: Word, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    GameCard(onClick = onClick, sound = false, modifier = modifier.fillMaxWidth()) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(word.emoji, fontSize = 32.sp)
             PinyinText(
@@ -222,7 +229,7 @@ private fun NewWordRow(word: Word, onClick: () -> Unit) {
 @Composable
 fun ClueCard(text: String, modifier: Modifier = Modifier, isNew: Boolean = false) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().appear(enabled = isNew).pop(isNew, amount = 0.05f),
         colors = CardDefaults.cardColors(containerColor = Gold.copy(alpha = if (isNew) 0.45f else 0.2f)),
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {

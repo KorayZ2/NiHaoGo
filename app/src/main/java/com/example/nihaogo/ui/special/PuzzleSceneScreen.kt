@@ -1,5 +1,6 @@
 package com.example.nihaogo.ui.special
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,10 +12,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,13 +25,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.nihaogo.AppContainer
+import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.content.Line
 import com.example.nihaogo.data.content.Scene
 import com.example.nihaogo.ui.common.FeedbackCard
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameOutlinedButton
 import com.example.nihaogo.ui.common.PinyinText
 import com.example.nihaogo.ui.common.ProgressHeader
 import com.example.nihaogo.ui.common.TileChip
+import com.example.nihaogo.ui.common.answerFeedback
 import com.example.nihaogo.ui.common.appViewModel
+import com.example.nihaogo.ui.common.appear
+import com.example.nihaogo.ui.common.pop
+import com.example.nihaogo.ui.common.rememberSfx
 import com.example.nihaogo.ui.lesson.WordTile
 import com.example.nihaogo.ui.theme.Correct
 import com.example.nihaogo.ui.theme.Wrong
@@ -89,6 +95,7 @@ class PuzzleSceneViewModel(container: AppContainer, modeId: String, index: Int) 
 
     fun check() {
         val ok = _state.value.answer.map { it.text } == current.tiles
+        sfx.answer(ok)
         if (ok) speak(current.hanzi)
         _state.update {
             it.copy(
@@ -150,12 +157,21 @@ fun PuzzleSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
             Text("📝 ชิ้นส่วนโน้ตที่ ${state.index + 1} แปลว่า", style = MaterialTheme.typography.labelLarge)
             Text("“${sentence.thai}”", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
 
-            val border = when (state.correct) {
-                true -> Correct
-                false -> Wrong
-                null -> MaterialTheme.colorScheme.outline
-            }
-            OutlinedCard(Modifier.fillMaxWidth().heightIn(min = 80.dp), border = BorderStroke(2.dp, border)) {
+            val border by animateColorAsState(
+                when (state.correct) {
+                    true -> Correct
+                    false -> Wrong
+                    null -> MaterialTheme.colorScheme.outline
+                },
+                label = "answerBorder",
+            )
+            OutlinedCard(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 80.dp)
+                    .answerFeedback(correct = state.correct == true && !state.revealed, wrong = state.correct == false),
+                border = BorderStroke(2.dp, border),
+            ) {
                 FlowRow(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     state.answer.forEach { tile -> TileChip(tile.text, onClick = { vm.unpick(tile) }) }
                 }
@@ -165,20 +181,24 @@ fun PuzzleSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
             }
 
             when (state.correct) {
-                null -> Button(onClick = vm::check, enabled = state.answer.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
+                null -> GameButton(onClick = vm::check, enabled = state.answer.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
                     Text("ตรวจคำตอบ")
                 }
                 false -> {
                     FeedbackCard("ยังไม่ถูกนะ 🤔", sentence.tipTh, Wrong)
-                    Button(onClick = vm::tryAgain, modifier = Modifier.fillMaxWidth()) { Text("ลองใหม่") }
+                    GameButton(onClick = vm::tryAgain, modifier = Modifier.fillMaxWidth()) { Text("ลองใหม่") }
                     if (state.wrongAttempts >= 2) {
-                        OutlinedButton(onClick = vm::reveal, modifier = Modifier.fillMaxWidth()) { Text("ดูเฉลย") }
+                        GameOutlinedButton(onClick = vm::reveal, modifier = Modifier.fillMaxWidth()) { Text("ดูเฉลย") }
                     }
                 }
                 true -> {
                     FeedbackCard(if (state.revealed) "เฉลย" else "ถูกต้อง! 🎉", sentence.tipTh, if (state.revealed) MaterialTheme.colorScheme.tertiary else Correct)
-                    SpeechBubble(Line(sentence.hanzi, sentence.pinyin, sentence.thai), onSpeak = { vm.speak(sentence.hanzi) })
-                    Button(onClick = vm::next, modifier = Modifier.fillMaxWidth()) {
+                    SpeechBubble(
+                        Line(sentence.hanzi, sentence.pinyin, sentence.thai),
+                        onSpeak = { vm.speak(sentence.hanzi) },
+                        modifier = Modifier.appear(150),
+                    )
+                    GameButton(onClick = vm::next, modifier = Modifier.fillMaxWidth()) {
                         Text(if (state.index < vm.scene.sentences.lastIndex) "ชิ้นต่อไป ▶" else "อ่านข้อความลับ 🔓")
                     }
                 }
@@ -190,18 +210,28 @@ fun PuzzleSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
 /** All solved pieces put back together, plus the clue they reveal. */
 @Composable
 private fun SecretMessage(vm: PuzzleSceneViewModel) {
-    Text("🔓 ข้อความลับ", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+    val sfx = rememberSfx()
+    LaunchedEffect(Unit) { sfx.play(Sfx.Sound.Unlock) }
+    Text(
+        "🔓 ข้อความลับ",
+        style = MaterialTheme.typography.headlineSmall,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.pop(true, amount = 0.15f),
+    )
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            vm.scene.sentences.forEach { s ->
-                PinyinText(s.hanzi, pinyin = s.pinyin, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                Text(s.thai, style = MaterialTheme.typography.bodySmall)
+            // The torn pieces drop into place one after another.
+            vm.scene.sentences.forEachIndexed { i, s ->
+                Column(Modifier.appear(200 + i * 220)) {
+                    PinyinText(s.hanzi, pinyin = s.pinyin, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(s.thai, style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
     }
-    OutlinedButton(onClick = { vm.speak(vm.scene.sentences.joinToString("") { it.hanzi }) }, modifier = Modifier.fillMaxWidth()) {
+    GameOutlinedButton(onClick = { vm.speak(vm.scene.sentences.joinToString("") { it.hanzi }) }, modifier = Modifier.fillMaxWidth()) {
         Text("🔊 ฟังทั้งข้อความ")
     }
     ClueCard(vm.scene.clueTh, isNew = true)
-    Button(onClick = vm::complete, modifier = Modifier.fillMaxWidth()) { Text("ดูผลลัพธ์") }
+    GameButton(onClick = vm::complete, modifier = Modifier.fillMaxWidth()) { Text("ดูผลลัพธ์") }
 }

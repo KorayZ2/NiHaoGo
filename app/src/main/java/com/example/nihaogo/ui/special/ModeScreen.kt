@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -19,7 +18,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,6 +32,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.nihaogo.AppContainer
+import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.content.ModeKind
 import com.example.nihaogo.data.content.Scene
 import com.example.nihaogo.data.content.SpecialMode
@@ -38,11 +40,14 @@ import com.example.nihaogo.data.content.clues
 import com.example.nihaogo.data.user.SpecialRules
 import com.example.nihaogo.data.user.SpecialRules.SceneState
 import com.example.nihaogo.data.user.UserProgress
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.InkScaffold
 import com.example.nihaogo.ui.common.PinyinText
 import com.example.nihaogo.ui.common.StarsRow
 import com.example.nihaogo.ui.common.appViewModel
+import com.example.nihaogo.ui.common.pop
 import com.example.nihaogo.ui.theme.Correct
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
@@ -63,6 +68,7 @@ class ModeViewModel(private val container: AppContainer, modeId: String) : ViewM
         viewModelScope.launch {
             var paid = false
             container.progress.update { p -> SpecialRules.purchase(p, mode, index)?.also { paid = true } ?: p }
+            if (paid) container.sfx.play(Sfx.Sound.Unlock) else container.sfx.wrong()
             _messages.send(
                 if (paid) "ปลดล็อกฉากที่ ${index + 1} แล้ว! 🔓"
                 else "เหรียญไม่พอ ต้องใช้ ${SpecialRules.SCENE_COST} 🪙 (เก็บเหรียญได้จากการผ่านด่าน)"
@@ -188,10 +194,16 @@ private fun kindLabel(scene: Scene): String = when (scene) {
 @Composable
 private fun SceneCard(index: Int, scene: Scene, state: SceneState, stars: Int, onOpen: () -> Unit, onBuy: () -> Unit) {
     val open = state == SceneState.Open
-    Card(
+    // Bounce once when the player has just paid to open this scene.
+    var wasForSale by remember { mutableStateOf(false) }
+    LaunchedEffect(state) { if (state == SceneState.NeedsPurchase) wasForSale = true }
+    GameCard(
         onClick = onOpen,
         enabled = open,
-        modifier = Modifier.fillMaxWidth().alpha(if (state == SceneState.Locked) 0.5f else 1f),
+        modifier = Modifier
+            .fillMaxWidth()
+            .pop(wasForSale && open, amount = 0.06f)
+            .alpha(if (state == SceneState.Locked) 0.5f else 1f),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -208,7 +220,7 @@ private fun SceneCard(index: Int, scene: Scene, state: SceneState, stars: Int, o
                 )
             }
             when (state) {
-                SceneState.NeedsPurchase -> Button(onClick = onBuy) { Text("ปลดล็อก ${SpecialRules.SCENE_COST} 🪙") }
+                SceneState.NeedsPurchase -> GameButton(onClick = onBuy) { Text("ปลดล็อก ${SpecialRules.SCENE_COST} 🪙") }
                 else -> StarsRow(stars)
             }
         }

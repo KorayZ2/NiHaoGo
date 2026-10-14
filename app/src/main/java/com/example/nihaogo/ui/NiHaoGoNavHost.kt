@@ -1,5 +1,10 @@
 package com.example.nihaogo.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -52,7 +57,21 @@ data class SceneRoute(val modeId: String, val index: Int)
 @Composable
 fun NiHaoGoNavHost() {
     val nav = rememberNavController()
-    NavHost(navController = nav, startDestination = CoverRoute) {
+    NavHost(
+        navController = nav,
+        startDestination = CoverRoute,
+        // Forward slides in from the right, back slides in from the left; the cover just fades.
+        enterTransition = {
+            if (initialState.destination.hasRoute<CoverRoute>()) fadeIn(tween(500))
+            else slideInHorizontally(tween(320)) { it / 4 } + fadeIn(tween(320))
+        },
+        exitTransition = {
+            if (initialState.destination.hasRoute<CoverRoute>()) fadeOut(tween(500))
+            else slideOutHorizontally(tween(320)) { -it / 8 } + fadeOut(tween(240))
+        },
+        popEnterTransition = { slideInHorizontally(tween(320)) { -it / 8 } + fadeIn(tween(320)) },
+        popExitTransition = { slideOutHorizontally(tween(320)) { it / 4 } + fadeOut(tween(240)) },
+    ) {
         composable<CoverRoute> {
             CoverScreen(onDone = {
                 // Guard against a tap and the timer both firing.

@@ -1,5 +1,6 @@
 package com.example.nihaogo.ui.lesson
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,10 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +32,9 @@ import com.example.nihaogo.data.content.Step
 import com.example.nihaogo.data.user.GameRules
 import com.example.nihaogo.speech.ChineseText
 import com.example.nihaogo.speech.Heard
+import com.example.nihaogo.ui.common.FeedbackCard
+import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameOutlinedButton
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.HanziBlock
 import com.example.nihaogo.ui.common.InkScaffold
@@ -43,11 +44,11 @@ import com.example.nihaogo.ui.common.ProgressHeader
 import com.example.nihaogo.ui.common.SpeakButton
 import com.example.nihaogo.ui.common.StepResult
 import com.example.nihaogo.ui.common.StepResultPanel
+import com.example.nihaogo.ui.common.TileChip
+import com.example.nihaogo.ui.common.answerFeedback
 import com.example.nihaogo.ui.common.appViewModel
 import com.example.nihaogo.ui.common.recordStep
 import com.example.nihaogo.ui.common.rememberMicPermission
-import com.example.nihaogo.ui.common.FeedbackCard
-import com.example.nihaogo.ui.common.TileChip
 import com.example.nihaogo.ui.theme.Correct
 import com.example.nihaogo.ui.theme.Wrong
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -106,6 +107,7 @@ class SentenceViewModel(private val container: AppContainer, private val categor
     fun check() {
         val s = _state.value
         val correct = s.answer.map { it.text } == current.tiles
+        container.sfx.answer(correct)
         if (correct) {
             container.speaker.speak(current.hanzi)
             _state.update {
@@ -137,6 +139,7 @@ class SentenceViewModel(private val container: AppContainer, private val categor
                 is Heard.Failed -> heard.messageTh
                 is Heard.Text -> {
                     val score = heard.candidates.maxOf { ChineseText.similarityScore(current.hanzi, it) }
+                    container.sfx.answer(score >= GameRules.SPEECH_PASS_SCORE)
                     "พูดได้ $score คะแนน " + "⭐".repeat(GameRules.starsForScore(score))
                 }
             }
@@ -195,12 +198,24 @@ fun SentenceStepScreen(categoryId: String, onBack: () -> Unit) {
             Text("แปลเป็นภาษาจีน", style = MaterialTheme.typography.labelLarge)
             Text("“${sentence.thai}”", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
 
-            val answerBorder = when (state.check) {
-                SentenceState.Check.Correct -> Correct
-                SentenceState.Check.Wrong -> Wrong
-                else -> MaterialTheme.colorScheme.outline
-            }
-            OutlinedCard(Modifier.fillMaxWidth().heightIn(min = 80.dp), border = BorderStroke(2.dp, answerBorder)) {
+            val answerBorder by animateColorAsState(
+                when (state.check) {
+                    SentenceState.Check.Correct -> Correct
+                    SentenceState.Check.Wrong -> Wrong
+                    else -> MaterialTheme.colorScheme.outline
+                },
+                label = "answerBorder",
+            )
+            OutlinedCard(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 80.dp)
+                    .answerFeedback(
+                        correct = state.check == SentenceState.Check.Correct,
+                        wrong = state.check == SentenceState.Check.Wrong,
+                    ),
+                border = BorderStroke(2.dp, answerBorder),
+            ) {
                 FlowRow(
                     Modifier.padding(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -217,14 +232,14 @@ fun SentenceStepScreen(categoryId: String, onBack: () -> Unit) {
             }
 
             when (state.check) {
-                null -> Button(onClick = vm::check, enabled = state.answer.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
+                null -> GameButton(onClick = vm::check, enabled = state.answer.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
                     Text("ตรวจคำตอบ")
                 }
                 SentenceState.Check.Wrong -> {
                     FeedbackCard("ยังไม่ถูกนะ 🤔", sentence.tipTh, Wrong)
-                    Button(onClick = vm::tryAgain, modifier = Modifier.fillMaxWidth()) { Text("ลองใหม่") }
+                    GameButton(onClick = vm::tryAgain, modifier = Modifier.fillMaxWidth()) { Text("ลองใหม่") }
                     if (state.wrongAttempts >= 2) {
-                        OutlinedButton(onClick = vm::reveal, modifier = Modifier.fillMaxWidth()) { Text("ดูเฉลย") }
+                        GameOutlinedButton(onClick = vm::reveal, modifier = Modifier.fillMaxWidth()) { Text("ดูเฉลย") }
                     }
                 }
                 SentenceState.Check.Correct, SentenceState.Check.Revealed -> {
@@ -244,7 +259,7 @@ fun SentenceStepScreen(categoryId: String, onBack: () -> Unit) {
                         if (vm.micAvailable) MicButton(listening, onClick = { withMic(vm::practiceSpeaking) })
                     }
                     state.speechMessage?.let { Text(it, modifier = Modifier.align(Alignment.CenterHorizontally)) }
-                    Button(onClick = vm::next, modifier = Modifier.fillMaxWidth()) {
+                    GameButton(onClick = vm::next, modifier = Modifier.fillMaxWidth()) {
                         Text(if (state.index < vm.sentences.lastIndex) "ถัดไป" else "ดูผลลัพธ์")
                     }
                 }

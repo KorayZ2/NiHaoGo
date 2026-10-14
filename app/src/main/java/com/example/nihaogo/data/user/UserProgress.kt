@@ -12,6 +12,13 @@ data class UserProgress(
     /** Best stars per special-mode scene, keyed by [SpecialRules.sceneKey]. */
     val special: Map<String, Int> = emptyMap(),
     val premium: Boolean = false,
+    /**
+     * Bosses whose last attempt was lost or left unfinished, so replaying one costs: category ids for
+     * category bosses, [SpecialRules.sceneKey] for special-mode customers.
+     */
+    val bossRetry: Set<String> = emptySet(),
+    /** Today's free boss retries and rewarded ads, which reset each day. */
+    val daily: DailyUsage = DailyUsage(),
     /** Debug builds only: opens every category and step for testing/demos. */
     val devUnlockAll: Boolean = false,
 ) {
@@ -30,7 +37,18 @@ data class UserProgress(
     val isFresh: Boolean get() = copy(devUnlockAll = false) == UserProgress()
 
     fun sceneStars(modeId: String, index: Int): Int = special[SpecialRules.sceneKey(modeId, index)] ?: 0
+
+    /** Usage counted for [day] (see [GameRules.today]); a new day starts from zero. */
+    fun usage(day: String): DailyUsage = daily.takeIf { it.day == day } ?: DailyUsage(day)
 }
+
+@Serializable
+data class DailyUsage(
+    /** Local date as yyyy-MM-dd. */
+    val day: String = "",
+    val freeRetries: Int = 0,
+    val adsWatched: Int = 0,
+)
 
 @Serializable
 data class CategoryProgress(
