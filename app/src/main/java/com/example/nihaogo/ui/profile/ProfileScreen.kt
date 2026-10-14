@@ -59,6 +59,7 @@ import com.example.nihaogo.data.user.GoogleCredentials
 import com.example.nihaogo.data.user.UserProgress
 import com.example.nihaogo.monetization.RewardedAds
 import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.GameOutlinedButton
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.InkScaffold
@@ -153,7 +154,7 @@ class ProfileViewModel(container: AppContainer) : ViewModel() {
 }
 
 @Composable
-fun ProfileScreen(onBack: () -> Unit) {
+fun ProfileScreen(onBack: () -> Unit, onOpenPinyin: () -> Unit) {
     val vm = appViewModel { ProfileViewModel(it) }
     val account by vm.account.collectAsStateWithLifecycle()
     val progress by vm.progress.collectAsStateWithLifecycle()
@@ -177,6 +178,7 @@ fun ProfileScreen(onBack: () -> Unit) {
                 GuestCard(busy = vm.busy, onSignIn = { vm.signIn(context) })
             }
             StatsCard(progress, vm.categoryCount, vm.sceneCount)
+            PinyinReviewCard(onOpenPinyin)
             val activity = LocalActivity.current
             if (!progress.premium && activity != null) {
                 RewardedAdCard(adsLeft = vm.adsLeft(progress), busy = vm.busy, onWatch = { vm.watchAd(activity) })
@@ -331,6 +333,24 @@ private fun SettingsCard(soundOn: Boolean, vibrateOn: Boolean, onSound: (Boolean
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+    }
+}
+
+@Composable
+private fun PinyinReviewCard(onOpen: () -> Unit) {
+    GameCard(onClick = onOpen, modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("🔤", fontSize = 22.sp)
+            Column(Modifier.padding(start = 12.dp).weight(1f)) {
+                Text("ทบทวนพินอิน", fontWeight = FontWeight.Bold)
+                Text(
+                    "พยัญชนะต้น สระ วรรณยุกต์ และการเปลี่ยนเสียง",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text("›", fontSize = 28.sp)
         }
     }
 }
