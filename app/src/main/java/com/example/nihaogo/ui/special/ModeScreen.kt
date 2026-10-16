@@ -1,9 +1,11 @@
 package com.example.nihaogo.ui.special
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +26,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -116,6 +120,15 @@ fun ModeScreen(modeId: String, onBack: () -> Unit, onOpenScene: (Int) -> Unit, o
                     if (SpecialRules.isFinished(mode, progress)) {
                         item {
                             Card(colors = CardDefaults.cardColors(containerColor = Correct.copy(alpha = 0.2f))) {
+                                endingArt(mode.id)?.let { art ->
+                                    // Square from the middle of the painting: everyone around the cake.
+                                    Image(
+                                        painter = painterResource(art),
+                                        contentDescription = "ฉลองวันเกิด",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxWidth().aspectRatio(1f),
+                                    )
+                                }
                                 Column(Modifier.padding(16.dp)) {
                                     Text("📁 บทสรุปคดี", fontWeight = FontWeight.Bold)
                                     Text(mode.endingTh, style = MaterialTheme.typography.bodyMedium)

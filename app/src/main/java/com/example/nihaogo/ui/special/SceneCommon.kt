@@ -114,7 +114,10 @@ abstract class SceneViewModel<S : Scene>(
     }
 }
 
-/** Top bar, words intro and result screen around a scene's play [content]. */
+/**
+ * Top bar, words intro and result screen around a scene's play [content]. A scene with a title
+ * painting shows it first; [fullScreen], when set, takes over the whole screen until the result.
+ */
 @Composable
 fun SceneFrame(
     vm: SceneViewModel<*>,
@@ -122,13 +125,26 @@ fun SceneFrame(
     passedMessage: String,
     detail: () -> String?,
     bottomBar: @Composable () -> Unit = {},
+    fullScreen: (@Composable () -> Unit)? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val started by vm.started.collectAsStateWithLifecycle()
     val result by vm.result.collectAsStateWithLifecycle()
     val scene = vm.scene
+    var entered by rememberSaveable { mutableStateOf(false) }
+    val art = sceneArt(vm.mode.id, vm.index)
+    if (art != null && !entered && !started) {
+        SceneOpening(art, scene.titleTh, scene.introTh, vm.index, vm.mode.scenes.size, onBack = onBack, onEnter = { entered = true })
+        return
+    }
+    if (fullScreen != null && result == null) {
+        fullScreen()
+        return
+    }
 
     InkScaffold(
+        // The scene's title painting stays on behind the play.
+        painting = art,
         topBar = { GameTopBar("${scene.emoji} ${scene.titleTh}", coins = null, onBack = onBack) },
         bottomBar = { if (started && result == null) bottomBar() },
     ) { padding ->

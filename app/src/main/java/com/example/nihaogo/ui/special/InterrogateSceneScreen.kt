@@ -219,12 +219,25 @@ fun InterrogateSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
     val vm = appViewModel { InterrogateSceneViewModel(it, modeId, index) }
     val state by vm.state.collectAsStateWithLifecycle()
 
+    val ending = endingArt(vm.mode.id)
     SceneFrame(
         vm = vm,
         onBack = onBack,
         passedMessage = "ไขคดีสำเร็จ! 🕵️",
         detail = { "ชี้ตัวผิด ${state.wrongGuesses} ครั้ง" },
         bottomBar = { if (!state.solved) AskBar(vm, state) },
+        fullScreen = if (state.solved && ending != null) {
+            {
+                val culprit = vm.suspect(vm.mode.culprit)
+                CaseClosed(
+                    art = ending,
+                    mode = vm.mode,
+                    culprit = culprit,
+                    onSpeak = { vm.speak(it.hanzi, voice = culprit.voice) },
+                    onDone = vm::complete,
+                )
+            }
+        } else null,
     ) { padding ->
         val listState = rememberLazyListState()
         LaunchedEffect(state.log.size, state.solved) {

@@ -1,6 +1,41 @@
 package com.example.nihaogo.ui.special
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import com.example.nihaogo.ui.common.appear
+import com.example.nihaogo.ui.common.pop
+import com.example.nihaogo.ui.theme.Cream
+import com.example.nihaogo.ui.theme.Ink
+import com.example.nihaogo.ui.theme.Night
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -83,18 +118,19 @@ class FindSceneViewModel(container: AppContainer, modeId: String, index: Int) :
 
     fun speakTarget(slow: Boolean = false) = speak(targetWord().hanzi, slow)
 
-    fun tap(wordIndex: Int) {
+    /** Whether [wordIndex] was the word asked for; null when the tap doesn't count right now. */
+    fun tap(wordIndex: Int): Boolean? {
         val s = _state.value
-        if (s.newClue != null || s.wrong != null || wordIndex in s.found) return
+        if (s.newClue != null || s.wrong != null || wordIndex in s.found) return null
         val target = targetWord(s)
         if (scene.words[wordIndex].hanzi != target.hanzi) {
             sfx.wrong()
             _state.update { it.copy(wrong = wordIndex, mistakes = it.mistakes + 1) }
             viewModelScope.launch {
-                delay(600)
+                delay(WrongMillis)
                 _state.update { it.copy(wrong = null) }
             }
-            return
+            return false
         }
         sfx.correct()
         speak(target.hanzi)
@@ -106,6 +142,7 @@ class FindSceneViewModel(container: AppContainer, modeId: String, index: Int) :
                 advance()
             }
         }
+        return true
     }
 
     fun advance() {
@@ -119,18 +156,29 @@ class FindSceneViewModel(container: AppContainer, modeId: String, index: Int) :
     }
 
     fun score(s: FindState = _state.value): Int = (100 - s.mistakes * 10).coerceAtLeast(0)
+
+    private companion object {
+        const val WrongMillis = 900L
+    }
 }
 
 @Composable
 fun FindSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
     val vm = appViewModel { FindSceneViewModel(it, modeId, index) }
     val state by vm.state.collectAsStateWithLifecycle()
+    val started by vm.started.collectAsStateWithLifecycle()
+    val art = sceneArt(modeId, index)
+    val spots = findSpots(modeId, index)
 
     SceneFrame(
         vm = vm,
         onBack = onBack,
         passedMessage = "สำรวจเสร็จแล้ว! ได้เบาะแส ${state.clues.size} ชิ้น",
         detail = { "แตะผิด ${state.mistakes} ครั้ง" },
+        // With a painting that knows where things are, the player searches the painting itself.
+        fullScreen = if (started && art != null && spots != null) {
+            { PaintedFind(vm, state, art, spots, onBack) }
+        } else null,
     ) { padding ->
         LaunchedEffect(state.target) { vm.speakTarget() }
         LazyVerticalGrid(
@@ -207,5 +255,158 @@ private fun TargetCard(word: Word, onSpeak: (slow: Boolean) -> Unit) {
             SpeakButton(onClick = { onSpeak(false) })
             SpeakButton(onClick = { onSpeak(true) }, slow = true, modifier = Modifier.padding(start = 8.dp))
         }
+    }
+}
+
+/**
+ * The search played on the scene's painting: tap the object itself. A find leaves a green ✓
+ * with its word; a wrong object flashes a red ✗ with what it is; empty ground does nothing.
+ */
+@Composable
+private fun PaintedFind(
+    vm: FindSceneViewModel,
+    state: FindState,
+    @DrawableRes art: Int,
+    spots: Map<String, List<Rect>>,
+    onBack: () -> Unit,
+) {
+    LightSystemBarIcons()
+    LaunchedEffect(state.target) { vm.speakTarget() }
+    val painter = painterResource(art)
+    val density = LocalDensity.current
+    // Which part of the painting each word was tapped on, for its mark.
+    val foundAt = remember { mutableStateMapOf<Int, Rect>() }
+    var wrongAt by remember { mutableStateOf<Rect?>(null) }
+    LaunchedEffect(state.found) { if (state.found.isEmpty()) foundAt.clear() }
+
+    BoxWithConstraints(Modifier.fillMaxSize().background(Night)) {
+        // Full width, resting on the bottom: on a tall phone the space above holds the target
+        // card; on a short one the card floats over the sky.
+        val w = constraints.maxWidth.toFloat()
+        val drawnH = painter.intrinsicSize.run { height * w / width }
+        val top = constraints.maxHeight - drawnH
+        Image(
+            painter = painter,
+            contentDescription = vm.scene.titleTh,
+            contentScale = ContentScale.FillWidth,
+            alignment = Alignment.BottomCenter,
+            modifier = Modifier.fillMaxSize(),
+        )
+        if (top > 0) {
+            val fade = with(density) { 80.dp.toPx() }
+            Box(
+                Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(listOf(Night, Color.Transparent), startY = top, endY = top + fade),
+                ),
+            )
+        }
+        fun Modifier.over(r: Rect): Modifier = with(density) {
+            offset((r.left * w).toDp(), (top + r.top * drawnH).toDp())
+                .size((r.width * w).toDp(), (r.height * drawnH).toDp())
+        }
+
+        spots.forEach { (hanzi, rects) ->
+            val wordIndex = vm.scene.words.indexOfFirst { it.hanzi == hanzi }
+            if (wordIndex < 0) return@forEach
+            rects.forEach { r ->
+                Box(
+                    Modifier.over(r).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                        when (vm.tap(wordIndex)) {
+                            true -> foundAt[wordIndex] = r
+                            false -> wrongAt = r
+                            null -> Unit
+                        }
+                    },
+                )
+            }
+        }
+        foundAt.forEach { (wordIndex, r) ->
+            Box(Modifier.over(r), contentAlignment = Alignment.Center) { SpotMark(vm.scene.words[wordIndex], right = true) }
+        }
+        val wrong = state.wrong
+        val wrongRect = wrongAt
+        if (wrong != null && wrongRect != null) {
+            Box(Modifier.over(wrongRect), contentAlignment = Alignment.Center) { SpotMark(vm.scene.words[wrong], right = false) }
+        }
+
+        Column(
+            Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(onClick = onBack, modifier = Modifier.background(Night.copy(alpha = 0.55f), RoundedCornerShape(50))) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "ย้อนกลับ", tint = Cream)
+                }
+                LinearProgressIndicator(
+                    progress = { state.found.size.toFloat() / vm.scene.targets.size },
+                    modifier = Modifier.weight(1f).height(10.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    trackColor = Cream.copy(alpha = 0.35f),
+                )
+                Text(
+                    "${state.found.size}/${vm.scene.targets.size}",
+                    color = Cream,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .background(Night.copy(alpha = 0.55f), RoundedCornerShape(50))
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                )
+            }
+            AnimatedContent(
+                targetState = vm.targetWord(state),
+                transitionSpec = { (slideInVertically { it / 2 } + fadeIn()) togetherWith fadeOut() },
+                label = "target",
+            ) { word -> TargetCard(word, onSpeak = vm::speakTarget) }
+        }
+
+        state.newClue?.let { clue ->
+            Column(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth().navigationBarsPadding().padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Card(
+                    Modifier.fillMaxWidth().appear().pop(true, amount = 0.05f),
+                    colors = CardDefaults.cardColors(containerColor = Cream, contentColor = Ink),
+                    border = BorderStroke(2.dp, Gold),
+                ) {
+                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text("🔍", fontSize = 24.sp)
+                        PinyinText(
+                            "เบาะแสใหม่! $clue",
+                            modifier = Modifier.padding(start = 10.dp),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+                GameButton(onClick = vm::advance, modifier = Modifier.fillMaxWidth().appear(200)) { Text("จดเบาะแสแล้ว ไปต่อ ▶") }
+            }
+        }
+    }
+}
+
+/** A ring on the painting: green with the word for a find, red with what it was for a miss. */
+@Composable
+private fun SpotMark(word: Word, right: Boolean) {
+    val color = if (right) Correct else Wrong
+    Column(
+        Modifier.wrapContentSize(unbounded = true).pop(true, amount = 0.2f),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            Modifier.size(52.dp).border(4.dp, color, CircleShape).background(color.copy(alpha = 0.25f), CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(if (right) "✓" else "✗", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        }
+        Text(
+            if (right) word.hanzi else "${word.hanzi} ${word.thai}",
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(top = 2.dp)
+                .background(color, RoundedCornerShape(50))
+                .padding(horizontal = 8.dp, vertical = 2.dp),
+        )
     }
 }

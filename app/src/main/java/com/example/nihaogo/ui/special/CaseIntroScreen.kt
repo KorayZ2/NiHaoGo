@@ -1,8 +1,6 @@
 package com.example.nihaogo.ui.special
 
-import android.app.Activity
 import androidx.activity.compose.BackHandler
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -42,7 +40,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,23 +48,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.nihaogo.AppContainer
-import com.example.nihaogo.R
 import com.example.nihaogo.data.content.SpecialMode
 import com.example.nihaogo.data.content.Suspect
 import com.example.nihaogo.speech.VoiceStyle
@@ -84,31 +77,6 @@ import com.example.nihaogo.ui.theme.Gold
 import com.example.nihaogo.ui.theme.Ink
 import com.example.nihaogo.ui.theme.Night
 import kotlinx.coroutines.launch
-
-/**
- * Painted art for a mode's story intro: the scene of the crime, and the cast with where each
- * suspect stands in it (fractions of the picture, so taps line up however it is cropped).
- */
-private class CaseArt(
-    @param:DrawableRes val story: Int,
-    @param:DrawableRes val cast: Int,
-    val spots: Map<String, Rect>,
-)
-
-private val caseArt = mapOf(
-    "mansion" to CaseArt(
-        story = R.drawable.mansion_story,
-        cast = R.drawable.mansion_suspects,
-        spots = mapOf(
-            "laozhang" to Rect(0.07f, 0.21f, 0.36f, 0.60f),
-            "liayi" to Rect(0.37f, 0.23f, 0.71f, 0.63f),
-            "xiaolong" to Rect(0.71f, 0.24f, 0.98f, 0.67f),
-        ),
-    ),
-)
-
-/** Whether [modeId] opens with a story intro the first time it is entered. */
-fun hasCaseIntro(modeId: String): Boolean = modeId in caseArt
 
 class CaseIntroViewModel(private val container: AppContainer, modeId: String) : ViewModel() {
     val mode: SpecialMode = container.content.mode(modeId)
@@ -130,7 +98,7 @@ private const val CastPage = PageCount - 1
 fun CaseIntroScreen(modeId: String, firstRun: Boolean, onDone: () -> Unit) {
     val vm = appViewModel { CaseIntroViewModel(it, modeId) }
     val speakerState by vm.speakerState.collectAsStateWithLifecycle()
-    val art = caseArt.getValue(modeId)
+    val art = checkNotNull(caseArt(modeId)) { "no case art for $modeId" }
     val mode = vm.mode
     val pager = rememberPagerState { PageCount }
     val scope = rememberCoroutineScope()
@@ -177,24 +145,6 @@ fun CaseIntroScreen(modeId: String, firstRun: Boolean, onDone: () -> Unit) {
                 onNext = { scope.launch { pager.animateScrollToPage(pager.currentPage + 1) } },
                 onFinish = finish,
             )
-        }
-    }
-}
-
-/** The paintings are dark, so the status and navigation bar icons turn light while they show. */
-@Composable
-private fun LightSystemBarIcons() {
-    val view = LocalView.current
-    DisposableEffect(view) {
-        val window = (view.context as? Activity)?.window ?: return@DisposableEffect onDispose {}
-        val bars = WindowCompat.getInsetsController(window, view)
-        val status = bars.isAppearanceLightStatusBars
-        val navigation = bars.isAppearanceLightNavigationBars
-        bars.isAppearanceLightStatusBars = false
-        bars.isAppearanceLightNavigationBars = false
-        onDispose {
-            bars.isAppearanceLightStatusBars = status
-            bars.isAppearanceLightNavigationBars = navigation
         }
     }
 }
@@ -277,35 +227,13 @@ private fun SuspectsPage(
     met: List<String>,
     onMeet: (Suspect) -> Unit,
 ) {
-    val painter = painterResource(art.cast)
+    val image = painterResource(art.cast).intrinsicSize
     val density = LocalDensity.current
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        // Full width from the top, so no one's name card is cut off at the sides; on a tall
-        // phone the space left below holds the speech bubble.
-        val boxW = constraints.maxWidth.toFloat()
-        val image = painter.intrinsicSize
-        val drawnW = boxW
-        val drawnH = image.height * boxW / image.width
-        Image(
-            painter = painter,
-            contentDescription = "ผู้ต้องสงสัย",
-            contentScale = ContentScale.FillWidth,
-            alignment = Alignment.TopCenter,
-            modifier = Modifier.fillMaxSize(),
-        )
-        // Let the bottom edge of the painting fade into the background.
-        with(density) {
-            val fade = 120.dp.toPx()
-            Box(
-                Modifier.fillMaxSize().background(
-                    Brush.verticalGradient(
-                        listOf(Color.Transparent, Night),
-                        startY = drawnH - fade,
-                        endY = drawnH,
-                    ),
-                ),
-            )
-        }
+        PaintedBackdrop(art.cast, "ผู้ต้องสงสัย")
+        // Where the painting sits, so each suspect's tap area lands on them.
+        val drawnW = constraints.maxWidth.toFloat()
+        val drawnH = image.height * drawnW / image.width
 
         mode.suspects.forEach { s ->
             val spot = art.spots[s.id] ?: return@forEach
