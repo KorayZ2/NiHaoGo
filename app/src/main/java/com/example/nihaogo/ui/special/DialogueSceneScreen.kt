@@ -69,13 +69,16 @@ class DialogueSceneViewModel(container: AppContainer, modeId: String, index: Int
 
     fun speaker(turn: Int): Person? = scene.turns[turn].speaker ?: scene.npc
 
+    /** Reads out a line of the person the learner is talking to, in their own voice. */
+    fun speakNpc(text: String) = speak(text, voice = mode.voiceOf(speaker(_state.value.turn)))
+
     fun choose(option: Int) {
         val s = _state.value
         val turn = scene.turns[s.turn]
         if (s.solved || option in s.tried) return
         sfx.answer(option == turn.answer)
         if (option == turn.answer) {
-            speak(turn.reply.hanzi)
+            speakNpc(turn.reply.hanzi)
             _state.update { it.copy(solved = true, points = it.points + if (it.tried.isEmpty()) 1 else 0) }
         } else {
             _state.update { it.copy(tried = it.tried + option) }
@@ -126,7 +129,7 @@ fun DialogueSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
         val scroll = rememberScrollState()
         LaunchedEffect(state.turn) {
             scroll.scrollTo(0)
-            vm.speak(turn.npc.hanzi)
+            vm.speakNpc(turn.npc.hanzi)
         }
         // Bring the reply, task and Next button into view as soon as they appear.
         LaunchedEffect(state.solved, state.taskSolved) {
@@ -142,7 +145,7 @@ fun DialogueSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
         ) {
             ProgressHeader(state.turn + 1, vm.scene.turns.size)
             vm.speaker(state.turn)?.let { SpeakerHeader(it) }
-            SpeechBubble(turn.npc, onSpeak = { vm.speak(turn.npc.hanzi) })
+            SpeechBubble(turn.npc, onSpeak = { vm.speakNpc(turn.npc.hanzi) })
 
             Text(
                 if (detective) "คุณจะถามว่าอะไร?" else "คุณจะพูดว่าอะไร?",
@@ -161,7 +164,7 @@ fun DialogueSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
 
             if (state.solved) {
                 vm.speaker(state.turn)?.let { Text("${it.emoji} ${it.name} ตอบว่า:", fontWeight = FontWeight.Bold) }
-                SpeechBubble(turn.reply, onSpeak = { vm.speak(turn.reply.hanzi) }, modifier = Modifier.appear())
+                SpeechBubble(turn.reply, onSpeak = { vm.speakNpc(turn.reply.hanzi) }, modifier = Modifier.appear())
                 if (turn.clueTh.isNotBlank()) ClueCard(turn.clueTh, isNew = true)
             }
 

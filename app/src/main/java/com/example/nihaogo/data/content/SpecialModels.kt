@@ -38,6 +38,10 @@ data class SpecialMode(
     val confession: Line? = null,
     val endingTh: String = "",
 ) {
+    /** How [person] sounds: a suspect speaks in the same voice in every scene. */
+    fun voiceOf(person: Person?): VoiceStyle =
+        suspects.firstOrNull { it.name == person?.name }?.voice ?: VoiceStyle.Default
+
     /** Every word the mode teaches, for AI prompts. */
     val allWords: List<Word> get() = scenes.flatMap { it.words }
 }
@@ -121,6 +125,8 @@ sealed class Scene {
         override val words: List<Word>,
         val sentences: List<Sentence>,
         val clueTh: String,
+        /** Who the note sounds like when read out. */
+        val voice: VoiceStyle = VoiceStyle.Default,
     ) : Scene()
 
     /** Career training: listen, repeat, then a listening quiz. */

@@ -73,6 +73,9 @@ class PuzzleSceneViewModel(container: AppContainer, modeId: String, index: Int) 
 
     val current get() = scene.sentences[_state.value.index]
 
+    /** Reads out part of the note in the voice of whoever wrote it. */
+    fun speakNote(text: String) = speak(text, voice = scene.voice)
+
     override fun reset() {
         _state.value = PuzzleState()
     }
@@ -109,7 +112,7 @@ class PuzzleSceneViewModel(container: AppContainer, modeId: String, index: Int) 
         val built = ChineseText.normalize(_state.value.answer.joinToString("") { it.text })
         val ok = built in current.acceptedTexts
         sfx.answer(ok)
-        if (ok) speak(built)
+        if (ok) speakNote(built)
         _state.update {
             it.copy(
                 correct = ok,
@@ -123,7 +126,7 @@ class PuzzleSceneViewModel(container: AppContainer, modeId: String, index: Int) 
     fun tryAgain() = _state.update { it.copy(correct = null, bank = (it.bank + it.answer).shuffled(), answer = emptyList()) }
 
     fun reveal() {
-        speak(current.hanzi)
+        speakNote(current.hanzi)
         _state.update { it.copy(revealed = true, correct = true, otherWays = otherWays(ChineseText.normalize(current.hanzi))) }
     }
 
@@ -211,7 +214,7 @@ fun PuzzleSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
                     val shown = sentence.alternatives
                         .firstOrNull { !state.revealed && ChineseText.normalize(it.hanzi) == ChineseText.normalize(built) }
                         ?: Line(sentence.hanzi, sentence.pinyin, sentence.thai)
-                    SpeechBubble(shown, onSpeak = { vm.speak(shown.hanzi) }, modifier = Modifier.appear(150))
+                    SpeechBubble(shown, onSpeak = { vm.speakNote(shown.hanzi) }, modifier = Modifier.appear(150))
                     state.otherWays.forEachIndexed { i, line ->
                         AlternativeCard(line, onSpeak = { vm.speak(line.hanzi) }, modifier = Modifier.appear(250 + i * 100))
                     }
@@ -246,7 +249,7 @@ private fun SecretMessage(vm: PuzzleSceneViewModel) {
             }
         }
     }
-    GameOutlinedButton(onClick = { vm.speak(vm.scene.sentences.joinToString("") { it.hanzi }) }, modifier = Modifier.fillMaxWidth()) {
+    GameOutlinedButton(onClick = { vm.speakNote(vm.scene.sentences.joinToString("") { it.hanzi }) }, modifier = Modifier.fillMaxWidth()) {
         Text("🔊 ฟังทั้งข้อความ")
     }
     ClueCard(vm.scene.clueTh, isNew = true)

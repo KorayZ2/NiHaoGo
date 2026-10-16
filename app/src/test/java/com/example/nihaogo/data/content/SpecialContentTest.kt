@@ -5,6 +5,8 @@ import com.example.nihaogo.data.ai.ScriptedInterrogation
 import com.example.nihaogo.data.user.GameRules
 import com.example.nihaogo.speech.ChineseText
 import com.example.nihaogo.speech.SpokenChinese
+import com.example.nihaogo.speech.VoiceKind
+import com.example.nihaogo.speech.VoiceStyle
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -197,5 +199,18 @@ class SpecialContentTest {
         }
         assertEquals("each suspect sounds different", suspects.size, suspects.map { it.voice }.toSet().size)
         assertTrue(special.detective.storyTh.isNotEmpty())
+    }
+
+    @Test
+    fun detectiveCharactersKeepTheirVoicesInEveryScene() {
+        val case = special.detective
+        case.scenes.filterIsInstance<Scene.Dialogue>().forEach { scene ->
+            scene.turns.forEach { turn ->
+                val person = turn.speaker ?: scene.npc
+                assertTrue("${turn.npc.hanzi}: speaker should be a suspect", case.suspects.any { it.name == person?.name })
+            }
+        }
+        assertEquals(VoiceStyle(VoiceKind.Male, 0.7f, 0.88f), case.voiceOf(Person("老张", "Lǎo Zhāng", "🤵")))
+        case.scenes.filterIsInstance<Scene.Puzzle>().forEach { assertTrue(it.titleTh, it.voice != VoiceStyle.Default) }
     }
 }
