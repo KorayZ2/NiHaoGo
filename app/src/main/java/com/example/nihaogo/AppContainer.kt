@@ -35,7 +35,7 @@ class AppContainer(context: Context) {
     private val auth = AuthRepository()
     val progressSync = ProgressSync(progress, auth)
     val accounts = AccountManager(auth, progress, progressSync)
-    val speaker by lazy { Speaker(appContext) }
+    val speaker by lazy { Speaker(appContext, sfx) }
     val speechInput by lazy { SpeechInput(appContext) }
     val settings = AppSettings(appContext)
     // Created up front so the sounds have finished loading by the first tap.

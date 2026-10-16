@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
 import android.os.Build
+import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -16,15 +17,19 @@ import com.example.nihaogo.R
  */
 class Sfx(context: Context, private val settings: AppSettings) {
 
-    enum class Sound(@param:RawRes val res: Int, val volume: Float) {
-        Tap(R.raw.sfx_tap, 0.5f),
-        Correct(R.raw.sfx_correct, 0.8f),
-        Wrong(R.raw.sfx_wrong, 0.7f),
-        Star(R.raw.sfx_star, 0.8f),
-        Coin(R.raw.sfx_coin, 0.6f),
-        Win(R.raw.sfx_win, 0.9f),
-        Lose(R.raw.sfx_lose, 0.7f),
-        Unlock(R.raw.sfx_unlock, 0.8f),
+    /**
+     * [volume] keeps any two sounds that overlap (stars, win, coin on the result screen) below
+     * full scale together. [ringMillis] is how long the sound is loud enough to clip speech.
+     */
+    enum class Sound(@param:RawRes val res: Int, val volume: Float, val ringMillis: Long) {
+        Tap(R.raw.sfx_tap, 0.5f, 0),
+        Correct(R.raw.sfx_correct, 0.7f, 350),
+        Wrong(R.raw.sfx_wrong, 0.6f, 400),
+        Star(R.raw.sfx_star, 0.6f, 250),
+        Coin(R.raw.sfx_coin, 0.5f, 350),
+        Win(R.raw.sfx_win, 0.65f, 900),
+        Lose(R.raw.sfx_lose, 0.6f, 900),
+        Unlock(R.raw.sfx_unlock, 0.65f, 600),
     }
 
     private val pool = SoundPool.Builder()
@@ -48,12 +53,20 @@ class Sfx(context: Context, private val settings: AppSettings) {
             context.getSystemService(Vibrator::class.java)
         }
 
+    // Uptime when the loudest sound played so far has died down.
+    @Volatile private var quietAt = 0L
+
     /** [rate] shifts the pitch (0.5–2.0), e.g. to make each star ping a little higher. */
     fun play(sound: Sound, rate: Float = 1f) {
         if (!settings.soundOn.value) return
         val id = ids.getValue(sound)
-        pool.play(id, sound.volume, sound.volume, 1, 0, rate.coerceIn(0.5f, 2f))
+        val r = rate.coerceIn(0.5f, 2f)
+        pool.play(id, sound.volume, sound.volume, 1, 0, r)
+        quietAt = maxOf(quietAt, SystemClock.uptimeMillis() + (sound.ringMillis / r).toLong())
     }
+
+    /** How long until the sounds playing now have died down, so speech can wait for them. */
+    fun millisUntilQuiet(): Long = (quietAt - SystemClock.uptimeMillis()).coerceAtLeast(0)
 
     fun tap() = play(Sound.Tap)
 
