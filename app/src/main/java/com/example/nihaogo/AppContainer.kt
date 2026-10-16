@@ -13,6 +13,7 @@ import com.example.nihaogo.data.ai.ScriptedInterrogation
 import com.example.nihaogo.data.content.Boss
 import com.example.nihaogo.data.content.Category
 import com.example.nihaogo.data.content.ContentRepository
+import com.example.nihaogo.data.content.OldWords
 import com.example.nihaogo.data.content.SpecialMode
 import com.example.nihaogo.data.content.Word
 import com.example.nihaogo.data.user.AccountManager
@@ -23,6 +24,7 @@ import com.example.nihaogo.data.user.ProgressSync
 import com.example.nihaogo.monetization.RewardedAds
 import com.example.nihaogo.speech.Speaker
 import com.example.nihaogo.speech.SpeechInput
+import kotlinx.coroutines.flow.first
 
 /** Manual dependency container; one instance lives in [NiHaoGoApp]. */
 class AppContainer(context: Context) {
@@ -43,9 +45,19 @@ class AppContainer(context: Context) {
 
     fun bossEngine(category: Category): BossEngine = bossEngine(category.boss, category.words)
 
-    fun bossEngine(boss: Boss, knownWords: List<Word>): BossEngine =
-        if (gemini.isConfigured) AiBossEngine(boss, knownWords, gemini) else ScriptedBossEngine(boss)
+    /** [flexible]: special modes, where spoken answers count and each answer gets another way to say it. */
+    fun bossEngine(
+        boss: Boss,
+        knownWords: List<Word>,
+        reviewWords: List<Word> = emptyList(),
+        flexible: Boolean = false,
+    ): BossEngine =
+        if (gemini.isConfigured) AiBossEngine(boss, knownWords, gemini, reviewWords, flexible) else ScriptedBossEngine(boss, flexible)
 
-    fun interrogation(mode: SpecialMode): InterrogationEngine =
-        if (gemini.isConfigured) AiInterrogation(mode, gemini) else ScriptedInterrogation()
+    fun interrogation(mode: SpecialMode, reviewWords: List<Word> = emptyList()): InterrogationEngine =
+        if (gemini.isConfigured) AiInterrogation(mode, gemini, reviewWords) else ScriptedInterrogation()
+
+    /** Words from the categories the learner has beaten, for [mode]'s AI characters to reuse. */
+    suspend fun reviewWords(mode: SpecialMode): List<Word> =
+        OldWords.learned(content.categories, progress.progress.first(), exclude = mode.allWords).map { it.word }
 }

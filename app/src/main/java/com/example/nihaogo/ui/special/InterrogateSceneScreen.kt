@@ -52,6 +52,7 @@ import com.example.nihaogo.data.content.Suspect
 import com.example.nihaogo.data.content.clues
 import com.example.nihaogo.data.user.SpecialRules
 import com.example.nihaogo.speech.Heard
+import com.example.nihaogo.ui.common.AlternativeCard
 import com.example.nihaogo.ui.common.GameButton
 import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.MicButton
@@ -75,6 +76,8 @@ sealed interface CaseEntry {
     data class Asked(val suspectId: String, val text: String) : CaseEntry
     data class Answered(val suspectId: String, val line: Line) : CaseEntry
     data class Feedback(val text: String) : CaseEntry
+    /** Another way the learner could have asked. */
+    data class Alternative(val line: Line) : CaseEntry
     /** A wrongly accused suspect explains where they were. */
     data class Cleared(val suspectId: String, val alibi: Line) : CaseEntry
 }
@@ -113,6 +116,11 @@ class InterrogateSceneViewModel(container: AppContainer, modeId: String, index: 
 
     fun suspect(id: String): Suspect = suspects.first { it.id == id }
 
+    /** The suspects may also use words from the categories the learner has beaten. */
+    override fun onStart() {
+        viewModelScope.launch { engine = container.interrogation(mode, container.reviewWords(mode)) }
+    }
+
     override fun reset() {
         engine = container.interrogation(mode)
         _state.value = InterrogateState(selected = suspects.first().id)
@@ -141,7 +149,10 @@ class InterrogateSceneViewModel(container: AppContainer, modeId: String, index: 
                 _state.update {
                     it.copy(
                         log = it.log + CaseEntry.Answered(suspectId, reply.line) +
-                            listOfNotNull(reply.feedbackTh.ifBlank { null }?.let { f -> CaseEntry.Feedback(f) }),
+                            listOfNotNull(
+                                reply.feedbackTh.ifBlank { null }?.let { f -> CaseEntry.Feedback(f) },
+                                reply.alternative?.let { a -> CaseEntry.Alternative(a) },
+                            ),
                         asked = it.asked + if (reply.understood) 1 else 0,
                     )
                 }
@@ -355,6 +366,7 @@ private fun LogEntry(vm: InterrogateSceneViewModel, entry: CaseEntry) {
             SuspectLine(vm.suspect(entry.suspectId), entry.alibi, onSpeak = { vm.speak(entry.alibi.hanzi) })
         }
         is CaseEntry.Feedback -> Text("💡 ${entry.text}", color = Wrong, style = MaterialTheme.typography.bodyMedium)
+        is CaseEntry.Alternative -> AlternativeCard(entry.line, onSpeak = { vm.speak(entry.line.hanzi) }, label = "💡 ถามอีกแบบได้ว่า")
     }
 }
 

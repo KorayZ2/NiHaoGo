@@ -204,10 +204,10 @@
           { "hanzi": "看看", "pinyin": "kànkan", "thai": "ดูหน่อย", "emoji": "👁️", "english": "to take a look" }
         ],
         "sentences": [
-          { "hanzi": "我们下午在花园等你。", "pinyin": "Wǒmen xiàwǔ zài huāyuán děng nǐ.", "thai": "ตอนบ่ายพวกเรารอนายอยู่ที่สวนนะ", "tiles": ["我们", "下午", "在", "花园", "等", "你"], "distractors": ["厨房"], "tipTh": "เวลา → สถานที่ → กริยา: 下午 + 在花园 + 等你" },
-          { "hanzi": "你家真的有龙玉吗？", "pinyin": "Nǐ jiā zhēn de yǒu lóng yù ma?", "thai": "บ้านนายมีหยกมังกรจริง ๆ เหรอ", "tiles": ["你家", "真的", "有", "龙玉", "吗"], "distractors": ["没"], "tipTh": "真的 (จริง ๆ) วางไว้หน้ากริยา 有" },
-          { "hanzi": "请给我们看看。", "pinyin": "Qǐng gěi wǒmen kànkan.", "thai": "ขอให้พวกเราดูหน่อยนะ", "tiles": ["请", "给", "我们", "看看"], "distractors": ["买"], "tipTh": "给 + คน + กริยา = ทำ…ให้คนนั้น, 看看 = ดูหน่อย" },
-          { "hanzi": "我们是你的好朋友。", "pinyin": "Wǒmen shì nǐ de hǎo péngyou.", "thai": "พวกเราเป็นเพื่อนที่ดีของนาย", "tiles": ["我们", "是", "你的", "好", "朋友"], "distractors": ["很"], "tipTh": "好 + คำนาม = …ที่ดี: 好朋友 = เพื่อนที่ดี" }
+          { "hanzi": "我们下午在花园等你。", "pinyin": "Wǒmen xiàwǔ zài huāyuán děng nǐ.", "thai": "ตอนบ่ายพวกเรารอนายอยู่ที่สวนนะ", "tiles": ["我们", "下午", "在", "花园", "等", "你"], "distractors": ["厨房"], "tipTh": "เวลา → สถานที่ → กริยา: 下午 + 在花园 + 等你", "alternatives": [{ "hanzi": "下午我们在花园等你。", "pinyin": "Xiàwǔ wǒmen zài huāyuán děng nǐ.", "thai": "ย้ายคำบอกเวลาไว้หน้าประธานก็ได้" }] },
+          { "hanzi": "你家真的有龙玉吗？", "pinyin": "Nǐ jiā zhēn de yǒu lóng yù ma?", "thai": "บ้านนายมีหยกมังกรจริง ๆ เหรอ", "tiles": ["你家", "真的", "有", "龙玉", "吗"], "distractors": ["没"], "tipTh": "真的 (จริง ๆ) วางไว้หน้ากริยา 有", "alternatives": [{ "hanzi": "你家真有龙玉吗？", "pinyin": "Nǐ jiā zhēn yǒu lóng yù ma?", "thai": "ภาษาพูด: ใช้แค่ 真 ก็ได้" }, { "hanzi": "你家是不是真的有龙玉？", "pinyin": "Nǐ jiā shì bu shì zhēn de yǒu lóng yù?", "thai": "ถามแบบ 是不是 = …หรือเปล่า" }] },
+          { "hanzi": "请给我们看看。", "pinyin": "Qǐng gěi wǒmen kànkan.", "thai": "ขอให้พวกเราดูหน่อยนะ", "tiles": ["请", "给", "我们", "看看"], "distractors": ["买"], "tipTh": "给 + คน + กริยา = ทำ…ให้คนนั้น, 看看 = ดูหน่อย", "alternatives": [{ "hanzi": "给我们看看吧！", "pinyin": "Gěi wǒmen kànkan ba!", "thai": "ภาษาพูด: ให้พวกเราดูหน่อยสิ (ไม่ต้องมี 请)" }, { "hanzi": "请让我们看一下。", "pinyin": "Qǐng ràng wǒmen kàn yíxià.", "thai": "สุภาพ: ขอให้พวกเราดูสักหน่อย" }] },
+          { "hanzi": "我们是你的好朋友。", "pinyin": "Wǒmen shì nǐ de hǎo péngyou.", "thai": "พวกเราเป็นเพื่อนที่ดีของนาย", "tiles": ["我们", "是", "你的", "好", "朋友"], "distractors": ["很"], "tipTh": "好 + คำนาม = …ที่ดี: 好朋友 = เพื่อนที่ดี", "alternatives": [{ "hanzi": "我们可是你的好朋友啊！", "pinyin": "Wǒmen kě shì nǐ de hǎo péngyou a!", "thai": "ภาษาพูด: เน้นว่าเป็นเพื่อนกันจริง ๆ นะ (可…啊)" }] }
         ],
         "clueTh": "โน้ตนี้เป็นของเพื่อน ๆ เสี่ยวหลง พวกเขาอยากเห็นหยกมังกร และนัดเสี่ยวหลงที่สวนตอนบ่าย!"
       },

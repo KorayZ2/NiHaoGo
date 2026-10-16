@@ -36,8 +36,15 @@ class GeminiClient(
 ) {
     val isConfigured: Boolean get() = apiKey.isNotBlank()
 
-    /** Sends the conversation and returns the model's text, which is requested as JSON. */
-    suspend fun generateJson(systemPrompt: String, turns: List<ChatTurn>): String = withContext(Dispatchers.IO) {
+    /**
+     * Sends the conversation and returns the model's text, which is requested as JSON.
+     * A higher [temperature] gives more varied replies.
+     */
+    suspend fun generateJson(
+        systemPrompt: String,
+        turns: List<ChatTurn>,
+        temperature: Double = 0.7,
+    ): String = withContext(Dispatchers.IO) {
         val body = buildJsonObject {
             putJsonObject("systemInstruction") {
                 putJsonArray("parts") { addJsonObject { put("text", systemPrompt) } }
@@ -52,7 +59,7 @@ class GeminiClient(
             }
             putJsonObject("generationConfig") {
                 put("responseMimeType", "application/json")
-                put("temperature", 0.7)
+                put("temperature", temperature)
             }
         }
 

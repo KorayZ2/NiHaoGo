@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -30,6 +31,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.NiHaoGoApp
+import com.example.nihaogo.data.content.OldWord
+import com.example.nihaogo.data.content.OldWords
 import com.example.nihaogo.data.content.Scene
 import com.example.nihaogo.data.content.SpecialMode
 import com.example.nihaogo.data.content.Word
@@ -67,6 +70,9 @@ abstract class SceneViewModel<S : Scene>(
 
     @Suppress("UNCHECKED_CAST")
     val scene: S = mode.scenes[index] as S
+
+    /** Words from stages 1–8 that this scene uses, shown in its intro for review. */
+    val oldWords: List<OldWord> = OldWords.inScene(mode, index, container.content.categories)
 
     val speakerState = container.speaker.state
 
@@ -138,6 +144,7 @@ fun SceneFrame(
             !started -> NewWordsIntro(
                 scene = scene,
                 index = vm.index,
+                oldWords = vm.oldWords,
                 speakerState = vm.speakerState,
                 onSpeak = { vm.speak(it) },
                 onStart = vm::start,
@@ -157,11 +164,14 @@ fun RoleplaySceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
         return
     }
     val container = (LocalContext.current.applicationContext as NiHaoGoApp).container
-    val scene = container.content.mode(modeId).scenes[index]
+    val mode = container.content.mode(modeId)
+    val scene = mode.scenes[index]
+    val oldWords = remember(modeId, index) { OldWords.inScene(mode, index, container.content.categories) }
     InkScaffold(topBar = { GameTopBar("${scene.emoji} ${scene.titleTh}", coins = null, onBack = onBack) }) { padding ->
         NewWordsIntro(
             scene = scene,
             index = index,
+            oldWords = oldWords,
             speakerState = container.speaker.state,
             onSpeak = { container.speaker.speak(it) },
             onStart = { started = true },
@@ -170,11 +180,12 @@ fun RoleplaySceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
     }
 }
 
-/** Scene story plus the new words it teaches; tap a word to hear it. */
+/** Scene story, the new words it teaches and the old ones it reuses; tap a word to hear it. */
 @Composable
 private fun NewWordsIntro(
     scene: Scene,
     index: Int,
+    oldWords: List<OldWord>,
     speakerState: StateFlow<Speaker.State>,
     onSpeak: (String) -> Unit,
     onStart: () -> Unit,
@@ -198,12 +209,23 @@ private fun NewWordsIntro(
         scene.words.forEachIndexed { i, word ->
             NewWordRow(word, onClick = { onSpeak(word.hanzi) }, modifier = Modifier.appear(100 + i * 50))
         }
+        if (oldWords.isNotEmpty()) {
+            Text("🔁 ทบทวนคำจากด่านเก่าที่ใช้ในฉากนี้", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            oldWords.forEachIndexed { i, old ->
+                NewWordRow(
+                    old.word,
+                    onClick = { onSpeak(old.word.hanzi) },
+                    modifier = Modifier.appear(100 + (scene.words.size + i) * 50),
+                    stage = old.stage,
+                )
+            }
+        }
         GameButton(onClick = onStart, modifier = Modifier.fillMaxWidth()) { Text("เริ่มเลย ▶") }
     }
 }
 
 @Composable
-private fun NewWordRow(word: Word, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun NewWordRow(word: Word, onClick: () -> Unit, modifier: Modifier = Modifier, stage: Int? = null) {
     GameCard(onClick = onClick, sound = false, modifier = modifier.fillMaxWidth()) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(word.emoji, fontSize = 32.sp)
@@ -218,6 +240,9 @@ private fun NewWordRow(word: Word, onClick: () -> Unit, modifier: Modifier = Mod
                 Text(word.thai, style = MaterialTheme.typography.bodyLarge)
                 if (word.english.isNotEmpty()) {
                     Text(word.english, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (stage != null) {
+                    Text("จากหมวด $stage", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                 }
             }
             Text("  🔊")
