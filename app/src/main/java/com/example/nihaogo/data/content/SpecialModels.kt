@@ -1,5 +1,6 @@
 package com.example.nihaogo.data.content
 
+import com.example.nihaogo.speech.VoiceStyle
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -24,6 +25,8 @@ data class SpecialMode(
     val titleZh: String,
     val titlePinyin: String,
     val introTh: String,
+    /** Detective only: the opening story, one paragraph per entry, shown on the case intro. */
+    val storyTh: List<String> = emptyList(),
     /** Category whose boss must be beaten before this mode opens. */
     val unlockAfter: String,
     val scenes: List<Scene>,
@@ -59,6 +62,10 @@ data class Suspect(
     val alibi: Line,
     /** Suggested questions with the scripted answers used offline. */
     val questions: List<SuggestedQuestion>,
+    /** How they introduce themselves on the case intro. */
+    val intro: Line? = null,
+    /** How this character's lines are read out. */
+    val voice: VoiceStyle = VoiceStyle.Default,
 )
 
 @Serializable

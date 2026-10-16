@@ -2,10 +2,8 @@ package com.example.nihaogo.ui.intro
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -60,6 +56,7 @@ import com.example.nihaogo.ui.common.GameOutlinedButton
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.HanziBlock
 import com.example.nihaogo.ui.common.InkScaffold
+import com.example.nihaogo.ui.common.PageDots
 import com.example.nihaogo.ui.common.PinyinText
 import com.example.nihaogo.ui.common.ProgressHeader
 import com.example.nihaogo.ui.common.SpeakButton
@@ -250,21 +247,6 @@ private fun IntroBottomBar(
             } else if (canFinish) {
                 GameButton(onClick = onFinish, modifier = Modifier.appear()) { Text(finishLabel) }
             }
-        }
-    }
-}
-
-@Composable
-private fun PageDots(current: Int, count: Int) {
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        repeat(count) { i ->
-            val width by animateDpAsState(if (i == current) 18.dp else 8.dp, label = "dot$i")
-            Box(
-                Modifier
-                    .size(width, 8.dp)
-                    .clip(CircleShape)
-                    .background(if (i == current) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
-            )
         }
     }
 }

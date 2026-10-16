@@ -145,7 +145,7 @@ class InterrogateSceneViewModel(container: AppContainer, modeId: String, index: 
         viewModelScope.launch {
             try {
                 val reply = engine.ask(suspect(suspectId), text)
-                speak(reply.line.hanzi)
+                speak(reply.line.hanzi, voice = suspect(suspectId).voice)
                 _state.update {
                     it.copy(
                         log = it.log + CaseEntry.Answered(suspectId, reply.line) +
@@ -191,12 +191,12 @@ class InterrogateSceneViewModel(container: AppContainer, modeId: String, index: 
     fun accuse(id: String) {
         sfx.answer(id == mode.culprit)
         if (id == mode.culprit) {
-            mode.confession?.let { speak(it.hanzi) }
+            mode.confession?.let { speak(it.hanzi, voice = suspect(id).voice) }
             _state.update { it.copy(accusing = false, solved = true) }
             return
         }
         val alibi = suspect(id).alibi
-        speak(alibi.hanzi)
+        speak(alibi.hanzi, voice = suspect(id).voice)
         _state.update {
             it.copy(
                 accusing = false,
@@ -355,7 +355,7 @@ private fun LogEntry(vm: InterrogateSceneViewModel, entry: CaseEntry) {
                 }
             }
         }
-        is CaseEntry.Answered -> SuspectLine(vm.suspect(entry.suspectId), entry.line, onSpeak = { vm.speak(entry.line.hanzi) })
+        is CaseEntry.Answered -> SuspectLine(vm.suspect(entry.suspectId), entry.line, onSpeak = { vm.speak(entry.line.hanzi, voice = vm.suspect(entry.suspectId).voice) })
         is CaseEntry.Cleared -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 "❌ ${vm.suspect(entry.suspectId).name} ไม่ใช่คนร้าย!",
@@ -363,7 +363,7 @@ private fun LogEntry(vm: InterrogateSceneViewModel, entry: CaseEntry) {
                 color = Wrong,
                 modifier = Modifier.shake(true),
             )
-            SuspectLine(vm.suspect(entry.suspectId), entry.alibi, onSpeak = { vm.speak(entry.alibi.hanzi) })
+            SuspectLine(vm.suspect(entry.suspectId), entry.alibi, onSpeak = { vm.speak(entry.alibi.hanzi, voice = vm.suspect(entry.suspectId).voice) })
         }
         is CaseEntry.Feedback -> Text("💡 ${entry.text}", color = Wrong, style = MaterialTheme.typography.bodyMedium)
         is CaseEntry.Alternative -> AlternativeCard(entry.line, onSpeak = { vm.speak(entry.line.hanzi) }, label = "💡 ถามอีกแบบได้ว่า")
@@ -389,7 +389,7 @@ private fun Solved(vm: InterrogateSceneViewModel, modifier: Modifier = Modifier)
             color = Correct,
             modifier = Modifier.pop(true, amount = 0.12f),
         )
-        vm.mode.confession?.let { SuspectLine(culprit, it, onSpeak = { vm.speak(it.hanzi) }) }
+        vm.mode.confession?.let { SuspectLine(culprit, it, onSpeak = { vm.speak(it.hanzi, voice = culprit.voice) }) }
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)) {
             Text(vm.mode.endingTh, modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.bodyLarge)
         }

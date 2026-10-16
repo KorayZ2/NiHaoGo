@@ -42,6 +42,7 @@ import com.example.nihaogo.data.user.SpecialRules.SceneState
 import com.example.nihaogo.data.user.UserProgress
 import com.example.nihaogo.ui.common.GameButton
 import com.example.nihaogo.ui.common.GameCard
+import com.example.nihaogo.ui.common.GameOutlinedButton
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.InkScaffold
 import com.example.nihaogo.ui.common.PinyinText
@@ -78,7 +79,7 @@ class ModeViewModel(private val container: AppContainer, modeId: String) : ViewM
 }
 
 @Composable
-fun ModeScreen(modeId: String, onBack: () -> Unit, onOpenScene: (Int) -> Unit) {
+fun ModeScreen(modeId: String, onBack: () -> Unit, onOpenScene: (Int) -> Unit, onOpenIntro: () -> Unit) {
     val vm = appViewModel { ModeViewModel(it, modeId) }
     val progress by vm.progress.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -96,6 +97,13 @@ fun ModeScreen(modeId: String, onBack: () -> Unit, onOpenScene: (Int) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item { ModeHeader(mode) }
+            if (hasCaseIntro(mode.id)) {
+                item {
+                    GameOutlinedButton(onClick = onOpenIntro, modifier = Modifier.fillMaxWidth()) {
+                        Text("📜 ดูเรื่องราวและตัวละครอีกครั้ง")
+                    }
+                }
+            }
             when (mode.kind) {
                 ModeKind.Career -> item { RankLadder(mode, progress) }
                 ModeKind.Detective -> {

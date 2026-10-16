@@ -38,6 +38,7 @@ import com.example.nihaogo.data.content.SpecialMode
 import com.example.nihaogo.data.content.Word
 import com.example.nihaogo.data.user.GameRules
 import com.example.nihaogo.speech.Speaker
+import com.example.nihaogo.speech.VoiceStyle
 import com.example.nihaogo.ui.boss.BossScreen
 import com.example.nihaogo.ui.boss.BossTarget
 import com.example.nihaogo.ui.common.GameButton
@@ -82,7 +83,8 @@ abstract class SceneViewModel<S : Scene>(
     private val _result = MutableStateFlow<StepResult?>(null)
     val result: StateFlow<StepResult?> = _result.asStateFlow()
 
-    fun speak(text: String, slow: Boolean = false) = container.speaker.speak(text, slow)
+    fun speak(text: String, slow: Boolean = false, voice: VoiceStyle = VoiceStyle.Default) =
+        container.speaker.speak(text, slow, voice)
 
     fun start() {
         _started.value = true

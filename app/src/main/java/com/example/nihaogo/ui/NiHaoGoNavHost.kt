@@ -17,6 +17,7 @@ import com.example.nihaogo.data.content.Scene
 import com.example.nihaogo.data.content.Step
 import com.example.nihaogo.ui.boss.BossScreen
 import com.example.nihaogo.ui.boss.BossTarget
+import com.example.nihaogo.ui.special.CaseIntroScreen
 import com.example.nihaogo.ui.special.DialogueSceneScreen
 import com.example.nihaogo.ui.special.FindSceneScreen
 import com.example.nihaogo.ui.special.InterrogateSceneScreen
@@ -24,6 +25,7 @@ import com.example.nihaogo.ui.special.ModeScreen
 import com.example.nihaogo.ui.special.PuzzleSceneScreen
 import com.example.nihaogo.ui.special.RoleplaySceneScreen
 import com.example.nihaogo.ui.special.TrainingSceneScreen
+import com.example.nihaogo.ui.special.hasCaseIntro
 import com.example.nihaogo.ui.cover.CoverScreen
 import com.example.nihaogo.ui.home.CategoryScreen
 import com.example.nihaogo.ui.home.HomeScreen
@@ -55,6 +57,10 @@ data class StepRoute(val categoryId: String, val step: Step)
 
 @Serializable
 data class ModeRoute(val modeId: String)
+
+/** A mode's story intro; [firstRun]: opened by itself on the way into the mode, not replayed. */
+@Serializable
+data class CaseIntroRoute(val modeId: String, val firstRun: Boolean)
 
 @Serializable
 data class SceneRoute(val modeId: String, val index: Int)
@@ -102,7 +108,11 @@ fun NiHaoGoNavHost() {
         composable<HomeRoute> {
             HomeScreen(
                 onOpenCategory = { nav.navigate(CategoryRoute(it)) },
-                onOpenMode = { nav.navigate(ModeRoute(it)) },
+                onOpenMode = { modeId ->
+                    // The first time in, the case is told before its scenes are shown.
+                    val firstVisit = hasCaseIntro(modeId) && !settings.caseIntroSeen(modeId)
+                    nav.navigate(if (firstVisit) CaseIntroRoute(modeId, firstRun = true) else ModeRoute(modeId))
+                },
                 onOpenProfile = { nav.navigate(ProfileRoute) },
             )
         }
@@ -118,7 +128,19 @@ fun NiHaoGoNavHost() {
                 modeId = route.modeId,
                 onBack = { nav.popBackStack() },
                 onOpenScene = { index -> nav.navigate(SceneRoute(route.modeId, index)) },
+                onOpenIntro = { nav.navigate(CaseIntroRoute(route.modeId, firstRun = false)) },
             )
+        }
+        composable<CaseIntroRoute> { entry ->
+            val route = entry.toRoute<CaseIntroRoute>()
+            CaseIntroScreen(modeId = route.modeId, firstRun = route.firstRun, onDone = {
+                if (nav.currentDestination?.hasRoute<CaseIntroRoute>() != true) return@CaseIntroScreen
+                if (route.firstRun) {
+                    nav.navigate(ModeRoute(route.modeId)) { popUpTo<CaseIntroRoute> { inclusive = true } }
+                } else {
+                    nav.popBackStack()
+                }
+            })
         }
         composable<SceneRoute> { entry ->
             val route = entry.toRoute<SceneRoute>()

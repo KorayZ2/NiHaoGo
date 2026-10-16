@@ -184,4 +184,18 @@ class SpecialContentTest {
             }
         }
     }
+
+    @Test
+    fun detectiveSuspectsIntroduceThemselvesInDistinctVoices() {
+        val suspects = special.detective.suspects
+        suspects.forEach { s ->
+            val intro = s.intro
+            assertTrue("${s.id} has no intro", intro != null && listOf(intro.hanzi, intro.pinyin, intro.thai).all { it.isNotBlank() })
+            assertTrue("${s.id} intro should say their name", s.name in intro!!.hanzi)
+            assertTrue("${s.id} pitch ${s.voice.pitch}", s.voice.pitch in 0.5f..2f)
+            assertTrue("${s.id} rate ${s.voice.rate}", s.voice.rate in 0.7f..1.5f)
+        }
+        assertEquals("each suspect sounds different", suspects.size, suspects.map { it.voice }.toSet().size)
+        assertTrue(special.detective.storyTh.isNotEmpty())
+    }
 }

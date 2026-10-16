@@ -39,10 +39,16 @@ class AppSettings(context: Context) {
         get() = prefs.getBoolean(KEY_PINYIN_INTRO_SEEN, false)
         set(value) = prefs.edit { putBoolean(KEY_PINYIN_INTRO_SEEN, value) }
 
+    /** Whether a special mode's story intro has been seen, so it only opens by itself once. */
+    fun caseIntroSeen(modeId: String): Boolean = prefs.getBoolean(KEY_CASE_INTRO_SEEN + modeId, false)
+
+    fun markCaseIntroSeen(modeId: String) = prefs.edit { putBoolean(KEY_CASE_INTRO_SEEN + modeId, true) }
+
     private companion object {
         const val KEY_SOUND = "sound_on"
         const val KEY_VIBRATE = "vibrate_on"
         const val KEY_SEEN_UNLOCKED = "seen_unlocked_categories"
         const val KEY_PINYIN_INTRO_SEEN = "pinyin_intro_seen"
+        const val KEY_CASE_INTRO_SEEN = "case_intro_seen_"
     }
 }

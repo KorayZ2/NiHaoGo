@@ -11,6 +11,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -18,6 +19,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
@@ -63,6 +65,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -563,5 +566,21 @@ fun ProgressHeader(current: Int, total: Int, modifier: Modifier = Modifier) {
             modifier = Modifier.align(Alignment.End),
             style = MaterialTheme.typography.labelMedium,
         )
+    }
+}
+
+/** Which page of a swipeable intro is showing; the current one is drawn wider. */
+@Composable
+fun PageDots(current: Int, count: Int, inactive: Color = MaterialTheme.colorScheme.outlineVariant) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        repeat(count) { i ->
+            val width by animateDpAsState(if (i == current) 18.dp else 8.dp, label = "dot$i")
+            Box(
+                Modifier
+                    .size(width, 8.dp)
+                    .clip(CircleShape)
+                    .background(if (i == current) MaterialTheme.colorScheme.primary else inactive),
+            )
+        }
     }
 }

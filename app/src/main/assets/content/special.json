@@ -7,6 +7,11 @@
     "titleZh": "龙玉不见了",
     "titlePinyin": "Lóng yù bú jiàn le",
     "introTh": "วันนี้เป็นวันเกิดปีที่ 80 ของคุณปู่หวัง แต่หยกมังกรประจำตระกูลหายไปจากตู้กระจก! คุณคือนักสืบน้อยที่ถูกเชิญมาไขคดี ใช้ภาษาจีนเก็บเบาะแสให้ครบ แล้วหาให้ได้ว่าใครเอาหยกไป",
+    "storyTh": [
+      "🎂 วันนี้เป็นวันเกิดปีที่ 80 ของคุณปู่หวัง ทุกคนในคฤหาสน์ต่างวุ่นวายเตรียมงานฉลองกันตั้งแต่เช้า",
+      "💎 แต่พอถึงตอนบ่าย หยกมังกร 龙玉 สมบัติประจำตระกูลที่วางอยู่ในตู้กระจก กลับหายไปเหลือแต่เบาะแดงว่างเปล่า!",
+      "🕵️ คุณคือนักสืบน้อยที่คุณปู่เชิญมาไขคดีนี้ ใช้ภาษาจีนสำรวจคฤหาสน์ เก็บเบาะแส และสอบปากคำทุกคน แล้วหาให้ได้ว่าใครเอาหยกไป!"
+    ],
     "unlockAfter": "food",
     "culprit": "xiaolong",
     "confession": {
@@ -22,6 +27,8 @@
         "namePinyin": "Lǎo Zhāng",
         "emoji": "🤵",
         "roleTh": "พ่อบ้าน",
+        "intro": { "hanzi": "你好！我是老张，是王爷爷家的管家。我在这里工作三十年了。", "pinyin": "Nǐ hǎo! Wǒ shì Lǎo Zhāng, shì Wáng yéye jiā de guǎnjiā. Wǒ zài zhèlǐ gōngzuò sānshí nián le.", "thai": "สวัสดีครับ ผมเหล่าจาง พ่อบ้านของบ้านคุณปู่หวัง ผมทำงานที่นี่มาสามสิบปีแล้วครับ" },
+        "voice": { "kind": "Male", "pitch": 0.7, "rate": 0.88 },
         "secret": "The butler for 30 years, loyal and a little strict. At 3 pm he was in the kitchen helping Auntie Li cook the birthday noodles. At about 3:30 he saw Xiao Long run upstairs holding something small and green. He does not know where the jade is now.",
         "alibi": { "hanzi": "我下午三点在厨房，和李阿姨一起做饭。", "pinyin": "Wǒ xiàwǔ sān diǎn zài chúfáng, hé Lǐ āyí yìqǐ zuò fàn.", "thai": "บ่ายสามโมงผมอยู่ในครัว ทำอาหารกับป้าหลี่ครับ" },
         "questions": [
@@ -45,6 +52,8 @@
         "namePinyin": "Lǐ āyí",
         "emoji": "👩‍🍳",
         "roleTh": "แม่ครัว",
+        "intro": { "hanzi": "你好！我是李阿姨，是这里的厨师。今天我做生日蛋糕！", "pinyin": "Nǐ hǎo! Wǒ shì Lǐ āyí, shì zhèlǐ de chúshī. Jīntiān wǒ zuò shēngrì dàngāo!", "thai": "สวัสดีจ้ะ ป้าคือป้าหลี่ แม่ครัวของที่นี่ วันนี้ป้าทำเค้กวันเกิดจ้ะ!" },
+        "voice": { "kind": "Female", "pitch": 0.88, "rate": 0.95 },
         "secret": "The cook. She spent the whole afternoon in the kitchen making the birthday cake and noodles together with the butler, and never left. She opened the kitchen window because it was hot, and noticed small, child-sized footprints outside it. She loves Xiao Long like her own grandson.",
         "alibi": { "hanzi": "我一直在厨房做蛋糕，我没有出去。", "pinyin": "Wǒ yìzhí zài chúfáng zuò dàngāo, wǒ méiyǒu chūqù.", "thai": "ป้าอยู่ในครัวทำเค้กตลอด ไม่ได้ออกไปไหนเลยจ้ะ" },
         "questions": [
@@ -68,6 +77,8 @@
         "namePinyin": "Xiǎo Lóng",
         "emoji": "👦",
         "roleTh": "หลานชาย อายุ 10 ขวบ",
+        "intro": { "hanzi": "你……你好！我叫小龙，我十岁。王爷爷是我的爷爷。", "pinyin": "Nǐ…… nǐ hǎo! Wǒ jiào Xiǎo Lóng, wǒ shí suì. Wáng yéye shì wǒ de yéye.", "thai": "สะ... สวัสดีครับ! ผมชื่อเสี่ยวหลง อายุสิบขวบ คุณปู่หวังเป็นคุณปู่ของผมครับ" },
+        "voice": { "kind": "Female", "pitch": 1.45, "rate": 1.12 },
         "secret": "Grandpa Wang's 10-year-old grandson. At 3:30 he secretly borrowed the jade to show his friends in the garden, because they did not believe his family has a dragon jade. The jade is now in his school bag upstairs. He is nervous and tries to hide it: he says he was in his room playing on his phone, but his red sneakers are muddy from the garden. If asked about the jade or his bag he says 'nothing' and changes the subject. He never confesses by himself.",
         "alibi": { "hanzi": "我……我在房间玩手机。", "pinyin": "Wǒ…… wǒ zài fángjiān wán shǒujī.", "thai": "ผม... ผมเล่นมือถืออยู่ในห้องครับ" },
         "questions": [
