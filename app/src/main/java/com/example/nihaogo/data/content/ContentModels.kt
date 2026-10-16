@@ -1,5 +1,6 @@
 package com.example.nihaogo.data.content
 
+import com.example.nihaogo.speech.ChineseText
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -40,7 +41,16 @@ data class Sentence(
     val tiles: List<String>,
     val distractors: List<String> = emptyList(),
     val tipTh: String = "",
-)
+    /**
+     * Special-mode puzzles: other ways to say the sentence. One built from the same tiles in another
+     * order is accepted as an answer too; every one is shown after the piece is solved.
+     */
+    val alternatives: List<Line> = emptyList(),
+) {
+    /** Answers accepted for the tile puzzle, as [ChineseText.normalize]d text. */
+    val acceptedTexts: Set<String>
+        get() = (listOf(hanzi) + alternatives.map { it.hanzi }).map(ChineseText::normalize).toSet()
+}
 
 @Serializable
 data class ListeningItem(

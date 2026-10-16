@@ -27,6 +27,7 @@ import com.example.nihaogo.ui.special.TrainingSceneScreen
 import com.example.nihaogo.ui.cover.CoverScreen
 import com.example.nihaogo.ui.home.CategoryScreen
 import com.example.nihaogo.ui.home.HomeScreen
+import com.example.nihaogo.ui.intro.PinyinIntroScreen
 import com.example.nihaogo.ui.lesson.ListeningStepScreen
 import com.example.nihaogo.ui.lesson.SentenceStepScreen
 import com.example.nihaogo.ui.lesson.VocabStepScreen
@@ -41,6 +42,10 @@ object HomeRoute
 
 @Serializable
 object ProfileRoute
+
+/** [firstRun]: shown by itself after the cover, rather than opened again from the profile. */
+@Serializable
+data class PinyinIntroRoute(val firstRun: Boolean)
 
 @Serializable
 data class CategoryRoute(val categoryId: String)
@@ -57,6 +62,7 @@ data class SceneRoute(val modeId: String, val index: Int)
 @Composable
 fun NiHaoGoNavHost() {
     val nav = rememberNavController()
+    val settings = (LocalContext.current.applicationContext as NiHaoGoApp).container.settings
     NavHost(
         navController = nav,
         startDestination = CoverRoute,
@@ -76,7 +82,20 @@ fun NiHaoGoNavHost() {
             CoverScreen(onDone = {
                 // Guard against a tap and the timer both firing.
                 if (nav.currentDestination?.hasRoute<CoverRoute>() == true) {
-                    nav.navigate(HomeRoute) { popUpTo<CoverRoute> { inclusive = true } }
+                    // A new player learns pinyin and tones before the map.
+                    val next: Any = if (settings.pinyinIntroSeen) HomeRoute else PinyinIntroRoute(firstRun = true)
+                    nav.navigate(next) { popUpTo<CoverRoute> { inclusive = true } }
+                }
+            })
+        }
+        composable<PinyinIntroRoute> { entry ->
+            val route = entry.toRoute<PinyinIntroRoute>()
+            PinyinIntroScreen(firstRun = route.firstRun, onDone = {
+                if (nav.currentDestination?.hasRoute<PinyinIntroRoute>() != true) return@PinyinIntroScreen
+                if (route.firstRun) {
+                    nav.navigate(HomeRoute) { popUpTo<PinyinIntroRoute> { inclusive = true } }
+                } else {
+                    nav.popBackStack()
                 }
             })
         }
@@ -88,7 +107,10 @@ fun NiHaoGoNavHost() {
             )
         }
         composable<ProfileRoute> {
-            ProfileScreen(onBack = { nav.popBackStack() })
+            ProfileScreen(
+                onBack = { nav.popBackStack() },
+                onOpenPinyin = { nav.navigate(PinyinIntroRoute(firstRun = false)) },
+            )
         }
         composable<ModeRoute> { entry ->
             val route = entry.toRoute<ModeRoute>()

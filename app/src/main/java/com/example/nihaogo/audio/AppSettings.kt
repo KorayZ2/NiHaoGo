@@ -34,9 +34,15 @@ class AppSettings(context: Context) {
         get() = prefs.getInt(KEY_SEEN_UNLOCKED, -1)
         set(value) = prefs.edit { putInt(KEY_SEEN_UNLOCKED, value) }
 
+    /** Whether the pinyin primer has been finished or skipped, so it only opens by itself once. */
+    var pinyinIntroSeen: Boolean
+        get() = prefs.getBoolean(KEY_PINYIN_INTRO_SEEN, false)
+        set(value) = prefs.edit { putBoolean(KEY_PINYIN_INTRO_SEEN, value) }
+
     private companion object {
         const val KEY_SOUND = "sound_on"
         const val KEY_VIBRATE = "vibrate_on"
         const val KEY_SEEN_UNLOCKED = "seen_unlocked_categories"
+        const val KEY_PINYIN_INTRO_SEEN = "pinyin_intro_seen"
     }
 }

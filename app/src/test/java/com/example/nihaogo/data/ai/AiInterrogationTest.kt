@@ -1,6 +1,7 @@
 package com.example.nihaogo.data.ai
 
 import com.example.nihaogo.data.content.ContentRepository
+import com.example.nihaogo.data.content.Word
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
@@ -20,7 +21,7 @@ class AiInterrogationTest {
     private val xiaolong = mode.suspects.first { it.id == "xiaolong" }
 
     /** Gemini stand-in that answers with the queued JSON texts, in order. */
-    private fun engine(vararg replies: String): Pair<AiInterrogation, List<String>> {
+    private fun engine(vararg replies: String, reviewWords: List<Word> = emptyList()): Pair<AiInterrogation, List<String>> {
         val queue = ArrayDeque(replies.toList())
         val requests = mutableListOf<String>()
         val http = OkHttpClient.Builder().addInterceptor { chain ->
@@ -36,7 +37,7 @@ class AiInterrogationTest {
                 .body("""{"candidates":[{"content":{"parts":[{"text":$text}]}}]}""".toResponseBody("application/json".toMediaType()))
                 .build()
         }.build()
-        return AiInterrogation(mode, GeminiClient("test-key", "test-model", http)) to requests
+        return AiInterrogation(mode, GeminiClient("test-key", "test-model", http), reviewWords) to requests
     }
 
     @Test
@@ -50,6 +51,29 @@ class AiInterrogationTest {
         // The model hears who is being asked and knows every suspect's secret.
         assertTrue(requests[0].contains("小龙"))
         assertTrue(requests[0].contains("school bag"))
+    }
+
+    @Test
+    fun suspectsMayUseWordsFromBeatenCategories() = runBlocking {
+        val (ai, requests) = engine(
+            """{"understood":true,"feedback_th":"","hanzi":"我在喝咖啡。","pinyin":"Wǒ zài hē kāfēi.","thai":"ผมดื่มกาแฟอยู่"}""",
+            reviewWords = listOf(Word("咖啡", "kāfēi", "กาแฟ", "☕")),
+        )
+        ai.ask(xiaolong, "你下午在哪儿？")
+        assertTrue(requests[0].contains("咖啡"))
+    }
+
+    @Test
+    fun suggestsAnotherWayToAsk() = runBlocking {
+        val (ai, requests) = engine(
+            """{"understood":true,"feedback_th":"","hanzi":"我在房间。","pinyin":"","thai":"","alt_hanzi":"你下午去哪儿了？","alt_pinyin":"Nǐ xiàwǔ qù nǎr le?","alt_thai":"ตอนบ่ายนายไปไหนมา"}""",
+            """{"understood":true,"feedback_th":"","hanzi":"我在房间。","pinyin":"","thai":""}""",
+        )
+        assertEquals("你下午去哪儿了？", ai.ask(xiaolong, "下午在哪儿啊？").alternative?.hanzi)
+        assertTrue(requests[0].contains("BY MEANING") || requests[0].contains("MEANING"))
+        // No alternative from the model: the closest suggested question is shown instead.
+        val fallback = ai.ask(xiaolong, "下午在哪儿啊？").alternative
+        assertTrue(fallback != null && xiaolong.questions.any { it.question == fallback })
     }
 
     @Test

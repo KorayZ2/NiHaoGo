@@ -1,6 +1,7 @@
 package com.example.nihaogo
 
 import android.graphics.Color
+import android.media.AudioManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -12,6 +13,9 @@ import com.example.nihaogo.ui.theme.NiHaoGoTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // The volume buttons set the media volume the Chinese voice plays at, even between words
+        // (otherwise they change the ringer while nothing is playing).
+        volumeControlStream = AudioManager.STREAM_MUSIC
         // Dark system-bar icons even when the phone is in dark mode, since the app is always light.
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),

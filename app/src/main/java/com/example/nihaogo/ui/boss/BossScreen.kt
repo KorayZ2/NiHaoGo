@@ -44,6 +44,7 @@ import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.ai.BossLine
 import com.example.nihaogo.data.content.Boss
 import com.example.nihaogo.data.content.Category
+import com.example.nihaogo.data.content.Line
 import com.example.nihaogo.data.content.Scene
 import com.example.nihaogo.data.content.SpecialMode
 import com.example.nihaogo.data.content.Step
@@ -53,6 +54,7 @@ import com.example.nihaogo.data.user.SpecialRules
 import com.example.nihaogo.data.user.UserProgress
 import com.example.nihaogo.monetization.RewardedAds
 import com.example.nihaogo.speech.Heard
+import com.example.nihaogo.ui.common.AlternativeCard
 import com.example.nihaogo.ui.common.GameButton
 import com.example.nihaogo.ui.common.GameOutlinedButton
 import com.example.nihaogo.ui.common.GameTopBar
@@ -84,6 +86,8 @@ sealed interface ChatItem {
     data class BossSays(val line: BossLine) : ChatItem
     data class PlayerSays(val text: String) : ChatItem
     data class Feedback(val correct: Boolean, val text: String) : ChatItem
+    /** Special modes: another way to say the learner's answer. */
+    data class Alternative(val line: Line) : ChatItem
 }
 
 data class BossState(
@@ -186,6 +190,8 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
     }
 
     private fun start() = launchCall(onRetry = ::start) {
+        // A career customer also works in words from the categories the learner has beaten.
+        if (mode != null) engine = container.bossEngine(boss, knownWords, container.reviewWords(mode), flexible = true)
         val line = engine.start()
         _state.update { it.copy(messages = listOf(ChatItem.BossSays(line)), current = line) }
         container.speaker.speak(line.hanzi)
@@ -210,6 +216,7 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
         _state.update {
             val added = buildList {
                 if (judgement.feedbackTh.isNotBlank()) add(ChatItem.Feedback(judgement.correct, judgement.feedbackTh))
+                judgement.alternative?.let { add(ChatItem.Alternative(it)) }
                 judgement.next?.let { next -> add(ChatItem.BossSays(next)) }
             }
             it.copy(
@@ -258,6 +265,8 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
     }
 
     fun speak(line: BossLine) = container.speaker.speak(line.hanzi)
+
+    fun speakText(hanzi: String) = container.speaker.speak(hanzi)
 
     fun speakHint() {
         _state.value.current?.hintHanzi?.let { container.speaker.speak(it) }
@@ -340,6 +349,7 @@ fun BossScreen(target: BossTarget, onBack: () -> Unit) {
                         is ChatItem.BossSays -> BossBubble(boss.emoji, item.line, onSpeak = { vm.speak(item.line) })
                         is ChatItem.PlayerSays -> PlayerBubble(item.text)
                         is ChatItem.Feedback -> FeedbackLine(item)
+                        is ChatItem.Alternative -> AlternativeCard(item.line, onSpeak = { vm.speakText(item.line.hanzi) })
                     }
                 }
             }

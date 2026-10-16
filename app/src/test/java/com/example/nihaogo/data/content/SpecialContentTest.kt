@@ -4,6 +4,7 @@ import com.example.nihaogo.data.ai.ScriptedBossEngine
 import com.example.nihaogo.data.ai.ScriptedInterrogation
 import com.example.nihaogo.data.user.GameRules
 import com.example.nihaogo.speech.ChineseText
+import com.example.nihaogo.speech.SpokenChinese
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -84,6 +85,58 @@ class SpecialContentTest {
                 assertTrue("${s.hanzi}: distractor is also a tile", s.distractors.none { it in s.tiles })
             }
         }
+    }
+
+    @Test
+    fun puzzleSentencesOfferOtherWaysToSayThem() {
+        special.modes.flatMap { it.scenes }.filterIsInstance<Scene.Puzzle>().flatMap { it.sentences }.forEach { s ->
+            assertTrue("${s.hanzi}: no alternative", s.alternatives.isNotEmpty())
+            s.alternatives.forEach { alt ->
+                assertTrue(alt.hanzi, listOf(alt.hanzi, alt.pinyin, alt.thai).all { it.isNotBlank() })
+                assertFalse("${alt.hanzi} repeats the sentence", ChineseText.normalize(alt.hanzi) == ChineseText.normalize(s.hanzi))
+            }
+        }
+    }
+
+    @Test
+    fun puzzleAcceptsAnotherWordOrder() {
+        val puzzle = special.detective.scenes.filterIsInstance<Scene.Puzzle>().first()
+        val garden = puzzle.sentences.first { it.tiles.contains("下午") }
+        // 下午 before the subject is just as right as after it.
+        val reordered = listOf("下午", "我们", "在", "花园", "等", "你").joinToString("")
+        assertTrue(ChineseText.normalize(reordered) in garden.acceptedTexts)
+        assertFalse(ChineseText.normalize("我们下午在厨房等你") in garden.acceptedTexts)
+    }
+
+    @Test
+    fun scriptedSuspectsUnderstandSpokenQuestions() = runBlocking {
+        val engine = ScriptedInterrogation()
+        special.detective.suspects.forEach { s ->
+            val q = s.questions.first()
+            val spoken = "请问" + q.question.hanzi.trimEnd('？', '?', '。') + "呀？"
+            val reply = engine.ask(s, spoken)
+            assertTrue("${s.id}: $spoken", reply.understood)
+            assertEquals(q.answer, reply.line)
+            // The learner is shown another way to ask the same thing.
+            assertTrue(reply.alternative != null && !SpokenChinese.sameMeaning(reply.alternative!!.hanzi, spoken))
+        }
+    }
+
+    @Test
+    fun specialCustomersSuggestAnotherWayEveryTime() = runBlocking {
+        special.modes.flatMap { it.scenes }.filterIsInstance<Scene.Roleplay>().forEach { scene ->
+            val engine = ScriptedBossEngine(scene.boss, flexible = true)
+            engine.start()
+            scene.boss.script.forEachIndexed { i, turn ->
+                val judgement = engine.answer(turn.sampleHanzi, isFinal = i == scene.boss.script.lastIndex)
+                assertTrue(judgement.correct)
+                assertTrue("${scene.boss.name} turn $i", judgement.alternative != null)
+            }
+        }
+        // Category bosses stay as they were.
+        val strict = ScriptedBossEngine(special.careers.first().scenes.filterIsInstance<Scene.Roleplay>().first().boss)
+        strict.start()
+        assertEquals(null, strict.answer("你好", isFinal = false).alternative)
     }
 
     @Test

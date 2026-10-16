@@ -90,7 +90,13 @@ import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameTopBar(title: String, coins: Int?, onBack: (() -> Unit)?, onProfile: (() -> Unit)? = null) {
+fun GameTopBar(
+    title: String,
+    coins: Int?,
+    onBack: (() -> Unit)?,
+    onProfile: (() -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
     CenterAlignedTopAppBar(
         title = { PinyinText(title, fontWeight = FontWeight.Bold) },
         navigationIcon = {
@@ -107,6 +113,7 @@ fun GameTopBar(title: String, coins: Int?, onBack: (() -> Unit)?, onProfile: (()
                     Icon(Icons.Filled.AccountCircle, contentDescription = "โปรไฟล์")
                 }
             }
+            actions()
         },
         // Transparent so the ink-wash background shows through (see InkScaffold).
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent),

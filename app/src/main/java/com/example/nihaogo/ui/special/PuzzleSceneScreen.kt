@@ -28,7 +28,9 @@ import com.example.nihaogo.AppContainer
 import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.content.Line
 import com.example.nihaogo.data.content.Scene
+import com.example.nihaogo.speech.ChineseText
 import com.example.nihaogo.ui.common.FeedbackCard
+import com.example.nihaogo.ui.common.AlternativeCard
 import com.example.nihaogo.ui.common.GameButton
 import com.example.nihaogo.ui.common.GameOutlinedButton
 import com.example.nihaogo.ui.common.PinyinText
@@ -55,6 +57,8 @@ data class PuzzleState(
     /** null = still arranging, true = right, false = wrong. */
     val correct: Boolean? = null,
     val revealed: Boolean = false,
+    /** Other ways to say the solved sentence, shown under it. */
+    val otherWays: List<Line> = emptyList(),
     val wrongAttempts: Int = 0,
     val firstTryCorrect: Int = 0,
     /** Every sentence solved: show the whole secret message. */
@@ -79,7 +83,7 @@ class PuzzleSceneViewModel(container: AppContainer, modeId: String, index: Int) 
         val s = scene.sentences[i]
         val bank = (s.tiles + s.distractors).mapIndexed { n, text -> WordTile(n, text) }.shuffled()
         _state.update {
-            it.copy(index = i, bank = bank, answer = emptyList(), correct = null, revealed = false, wrongAttempts = 0)
+            it.copy(index = i, bank = bank, answer = emptyList(), correct = null, revealed = false, wrongAttempts = 0, otherWays = emptyList())
         }
     }
 
@@ -93,13 +97,23 @@ class PuzzleSceneViewModel(container: AppContainer, modeId: String, index: Int) 
         _state.update { it.copy(answer = it.answer - tile, bank = it.bank + tile) }
     }
 
+    /** Every way to say [current] except the one the learner built. */
+    private fun otherWays(built: String): List<Line> {
+        val s = current
+        return (listOf(Line(s.hanzi, s.pinyin, s.thai)) + s.alternatives)
+            .filter { ChineseText.normalize(it.hanzi) != built }
+    }
+
     fun check() {
-        val ok = _state.value.answer.map { it.text } == current.tiles
+        // Any grammatical order listed in the content counts, not only the textbook one.
+        val built = ChineseText.normalize(_state.value.answer.joinToString("") { it.text })
+        val ok = built in current.acceptedTexts
         sfx.answer(ok)
-        if (ok) speak(current.hanzi)
+        if (ok) speak(built)
         _state.update {
             it.copy(
                 correct = ok,
+                otherWays = if (ok) otherWays(built) else emptyList(),
                 wrongAttempts = it.wrongAttempts + if (ok) 0 else 1,
                 firstTryCorrect = it.firstTryCorrect + if (ok && it.wrongAttempts == 0) 1 else 0,
             )
@@ -110,7 +124,7 @@ class PuzzleSceneViewModel(container: AppContainer, modeId: String, index: Int) 
 
     fun reveal() {
         speak(current.hanzi)
-        _state.update { it.copy(revealed = true, correct = true) }
+        _state.update { it.copy(revealed = true, correct = true, otherWays = otherWays(ChineseText.normalize(current.hanzi))) }
     }
 
     fun next() {
@@ -193,11 +207,14 @@ fun PuzzleSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
                 }
                 true -> {
                     FeedbackCard(if (state.revealed) "เฉลย" else "ถูกต้อง! 🎉", sentence.tipTh, if (state.revealed) MaterialTheme.colorScheme.tertiary else Correct)
-                    SpeechBubble(
-                        Line(sentence.hanzi, sentence.pinyin, sentence.thai),
-                        onSpeak = { vm.speak(sentence.hanzi) },
-                        modifier = Modifier.appear(150),
-                    )
+                    val built = state.answer.joinToString("") { it.text }
+                    val shown = sentence.alternatives
+                        .firstOrNull { !state.revealed && ChineseText.normalize(it.hanzi) == ChineseText.normalize(built) }
+                        ?: Line(sentence.hanzi, sentence.pinyin, sentence.thai)
+                    SpeechBubble(shown, onSpeak = { vm.speak(shown.hanzi) }, modifier = Modifier.appear(150))
+                    state.otherWays.forEachIndexed { i, line ->
+                        AlternativeCard(line, onSpeak = { vm.speak(line.hanzi) }, modifier = Modifier.appear(250 + i * 100))
+                    }
                     GameButton(onClick = vm::next, modifier = Modifier.fillMaxWidth()) {
                         Text(if (state.index < vm.scene.sentences.lastIndex) "ชิ้นต่อไป ▶" else "อ่านข้อความลับ 🔓")
                     }
