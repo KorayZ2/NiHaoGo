@@ -24,7 +24,12 @@ import com.example.nihaogo.data.user.ProgressSync
 import com.example.nihaogo.monetization.RewardedAds
 import com.example.nihaogo.speech.Speaker
 import com.example.nihaogo.speech.SpeechInput
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+
+private const val VoiceWaitMillis = 4_000L
 
 /** Manual dependency container; one instance lives in [NiHaoGoApp]. */
 class AppContainer(context: Context) {
@@ -42,6 +47,27 @@ class AppContainer(context: Context) {
     val sfx = Sfx(appContext, settings)
     val gemini = GeminiClient(BuildConfig.GEMINI_API_KEY, BuildConfig.GEMINI_MODEL)
     val rewardedAds = RewardedAds(appContext, BuildConfig.ADMOB_REWARDED_ID, progress)
+
+    /** What the cover's loading bar waits for, each with the line shown while it is the next to finish. */
+    enum class StartupStep(val label: String) {
+        Lessons("กำลังโหลดบทเรียน..."),
+        Progress("กำลังโหลดความคืบหน้า..."),
+        Sounds("กำลังเตรียมเสียงเอฟเฟกต์..."),
+        Voice("กำลังเตรียมเสียงพูดภาษาจีน..."),
+    }
+
+    /** Does [step]'s work, or returns at once if it is already done. Call from the main thread. */
+    suspend fun prepare(step: StartupStep) {
+        when (step) {
+            StartupStep.Lessons -> withContext(Dispatchers.IO) { content.pack }
+            StartupStep.Progress -> progress.progress.first()
+            StartupStep.Sounds -> sfx.awaitLoaded()
+            // Some phones take ages to start their speech engine; the app copes until it does.
+            StartupStep.Voice -> withTimeoutOrNull(VoiceWaitMillis) {
+                speaker.state.first { it != Speaker.State.Initializing }
+            }
+        }
+    }
 
     fun bossEngine(category: Category): BossEngine = bossEngine(category.boss, category.words)
 

@@ -16,11 +16,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,6 +75,7 @@ import com.example.nihaogo.ui.common.answerFeedback
 import com.example.nihaogo.ui.common.appViewModel
 import com.example.nihaogo.ui.theme.Correct
 import com.example.nihaogo.ui.theme.Gold
+import com.example.nihaogo.ui.theme.Jade
 import com.example.nihaogo.ui.theme.Wrong
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -246,11 +242,14 @@ fun FindSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
 
 @Composable
 private fun TargetCard(word: Word, onSpeak: (slow: Boolean) -> Unit) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Cream.copy(alpha = 0.8f), contentColor = Ink),
+        border = BorderStroke(2.dp, Gold.copy(alpha = 0.6f)),
+    ) {
         Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text("🔍 หาสิ่งนี้ในฉาก", style = MaterialTheme.typography.labelLarge)
-                PinyinText(word.hanzi, pinyin = word.pinyin, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+                PinyinText(word.hanzi, pinyin = word.pinyin, fontSize = 36.sp, fontWeight = FontWeight.Bold, pinyinColor = Jade)
             }
             SpeakButton(onClick = { onSpeak(false) })
             SpeakButton(onClick = { onSpeak(true) }, slow = true, modifier = Modifier.padding(start = 8.dp))
@@ -333,25 +332,7 @@ private fun PaintedFind(
             Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 4.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                IconButton(onClick = onBack, modifier = Modifier.background(Night.copy(alpha = 0.55f), RoundedCornerShape(50))) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "ย้อนกลับ", tint = Cream)
-                }
-                LinearProgressIndicator(
-                    progress = { state.found.size.toFloat() / vm.scene.targets.size },
-                    modifier = Modifier.weight(1f).height(10.dp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = Cream.copy(alpha = 0.35f),
-                )
-                Text(
-                    "${state.found.size}/${vm.scene.targets.size}",
-                    color = Cream,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .background(Night.copy(alpha = 0.55f), RoundedCornerShape(50))
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
-                )
-            }
+            PaintedProgressBar(state.found.size, vm.scene.targets.size, onBack)
             AnimatedContent(
                 targetState = vm.targetWord(state),
                 transitionSpec = { (slideInVertically { it / 2 } + fadeIn()) togetherWith fadeOut() },
@@ -364,21 +345,7 @@ private fun PaintedFind(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth().navigationBarsPadding().padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Card(
-                    Modifier.fillMaxWidth().appear().pop(true, amount = 0.05f),
-                    colors = CardDefaults.cardColors(containerColor = Cream, contentColor = Ink),
-                    border = BorderStroke(2.dp, Gold),
-                ) {
-                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text("🔍", fontSize = 24.sp)
-                        PinyinText(
-                            "เบาะแสใหม่! $clue",
-                            modifier = Modifier.padding(start = 10.dp),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                }
+                PaintedClueCard(clue)
                 GameButton(onClick = vm::advance, modifier = Modifier.fillMaxWidth().appear(200)) { Text("จดเบาะแสแล้ว ไปต่อ ▶") }
             }
         }

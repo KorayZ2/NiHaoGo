@@ -29,6 +29,8 @@ data class SpecialMode(
     val storyTh: List<String> = emptyList(),
     /** Category whose boss must be beaten before this mode opens. */
     val unlockAfter: String,
+    /** Listed but not playable yet, whatever the player has beaten. */
+    val comingSoon: Boolean = false,
     val scenes: List<Scene>,
     /** Career only: title earned after each finished scene. */
     val ranks: List<String> = emptyList(),

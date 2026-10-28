@@ -10,6 +10,9 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.annotation.RawRes
 import com.example.nihaogo.R
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 
 /**
  * Short game sound effects (made by `tools/gen_sfx.py`) plus the buzz on a wrong answer.
@@ -42,8 +45,20 @@ class Sfx(context: Context, private val settings: AppSettings) {
         )
         .build()
 
+    // How many sounds have finished loading, whether or not they loaded cleanly.
+    private val loadedCount = MutableStateFlow(0)
+
+    init {
+        pool.setOnLoadCompleteListener { _, _, _ -> loadedCount.update { it + 1 } }
+    }
+
     // Loading is async; a sound played before it finishes is silently skipped.
     private val ids = Sound.entries.associateWith { pool.load(context.applicationContext, it.res, 1) }
+
+    /** Suspends until every sound has finished loading (the cover waits on this). */
+    suspend fun awaitLoaded() {
+        loadedCount.first { it >= Sound.entries.size }
+    }
 
     private val vibrator: Vibrator? =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

@@ -83,7 +83,7 @@ class ProfileViewModel(container: AppContainer) : ViewModel() {
     val progress: StateFlow<UserProgress> = container.progress.progress
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserProgress())
     val categoryCount = container.content.categories.size
-    val sceneCount = container.content.special.modes.sumOf { it.scenes.size }
+    val sceneCount = container.content.special.modes.filterNot { it.comingSoon }.sumOf { it.scenes.size }
 
     var busy by mutableStateOf(false)
         private set

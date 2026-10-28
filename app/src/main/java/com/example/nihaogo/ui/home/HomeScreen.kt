@@ -195,11 +195,16 @@ fun HomeScreen(onOpenCategory: (String) -> Unit, onOpenMode: (String) -> Unit, o
                     modifier = Modifier.appear(delayMillis = 700, enabled = intro),
                     mode = mode,
                     open = open,
-                    status = if (open) modeProgressText(mode, progress)
-                    else "🔒 ชนะบอสหมวด ${after + 1} (${vm.categories[after].titleTh}) เพื่อเปิด",
+                    status = when {
+                        open -> modeProgressText(mode, progress)
+                        mode.comingSoon -> "🔒 เร็ว ๆ นี้ · ยังไม่เปิดให้เล่น"
+                        else -> "🔒 ชนะบอสหมวด ${after + 1} (${vm.categories[after].titleTh}) เพื่อเปิด"
+                    },
                     onClick = {
                         if (open) {
                             onOpenMode(mode.id)
+                        } else if (mode.comingSoon) {
+                            scope.launch { snackbar.showSnackbar("โหมดนี้กำลังจะมาเร็ว ๆ นี้ รอติดตามนะ 🔒") }
                         } else {
                             scope.launch { snackbar.showSnackbar("ชนะบอสหมวด ${after + 1} ก่อน ถึงจะเปิดโหมดนี้ได้นะ 🔒") }
                         }

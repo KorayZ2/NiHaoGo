@@ -14,7 +14,8 @@ class SpecialRulesTest {
 
     private val special = ContentRepository.parseSpecial(File("src/main/assets/${ContentRepository.SPECIAL_PATH}").readText())
     private val detective = special.detective
-    private val doctor = special.careers.first { it.id == "doctor" }
+    // The careers are shelved for now; their unlock rules are tested as they will be once they open.
+    private val doctor = special.careers.first { it.id == "doctor" }.copy(comingSoon = false)
 
     private fun beat(categoryId: String, progress: UserProgress = UserProgress()) =
         GameRules.applyStepResult(progress, categoryId, Step.Boss, 2).progress
@@ -26,6 +27,16 @@ class SpecialRulesTest {
         assertFalse(SpecialRules.isModeOpen(detective, beat("numbers")))
         assertTrue(SpecialRules.isModeOpen(detective, beat("food")))
         assertTrue(SpecialRules.isModeOpen(detective, UserProgress(devUnlockAll = true)))
+    }
+
+    @Test
+    fun comingSoonModesStayClosed() {
+        val shelved = doctor.copy(comingSoon = true)
+        assertFalse(SpecialRules.isModeOpen(shelved, beat("numbers")))
+        assertFalse(SpecialRules.isModeOpen(shelved, UserProgress(devUnlockAll = true)))
+        assertEquals(SceneState.Locked, SpecialRules.sceneState(shelved, 0, UserProgress(devUnlockAll = true)))
+        assertTrue(special.careers.all { it.comingSoon })
+        assertFalse(detective.comingSoon)
     }
 
     @Test

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -25,12 +26,14 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -51,6 +54,7 @@ import com.example.nihaogo.ui.common.ConfettiBurst
 import com.example.nihaogo.ui.common.GameButton
 import com.example.nihaogo.ui.common.PinyinText
 import com.example.nihaogo.ui.common.appear
+import com.example.nihaogo.ui.common.pop
 import com.example.nihaogo.ui.theme.Cream
 import com.example.nihaogo.ui.theme.Gold
 import com.example.nihaogo.ui.theme.Ink
@@ -60,6 +64,7 @@ import com.example.nihaogo.ui.theme.Night
  * Painted art for a mode: the scene of the crime and the cast for its story intro (with where
  * each suspect stands, as fractions of the picture), a title painting per scene, and the ending.
  * [findSpots]: for a find scene (by index), where each word's object is in its painting.
+ * [talkSpots]: for a dialogue scene (by index), where the people talking stand in its painting.
  */
 internal class CaseArt(
     @param:DrawableRes val story: Int,
@@ -68,7 +73,15 @@ internal class CaseArt(
     @param:DrawableRes val scenes: List<Int>,
     @param:DrawableRes val ending: Int,
     val findSpots: Map<Int, Map<String, List<Rect>>> = emptyMap(),
+    val talkSpots: Map<Int, TalkSpots> = emptyMap(),
 )
+
+/**
+ * Where the talkers are in a painting, as fractions of it: each speaker's head by their Chinese
+ * name (their bubble points at its top, and the detective's bubble keeps clear of it), and the
+ * top of the detective's (the player's) head.
+ */
+internal class TalkSpots(val speakers: Map<String, Rect>, val detective: Offset)
 
 private val caseArts = mapOf(
     "mansion" to CaseArt(
@@ -100,6 +113,9 @@ private val caseArts = mapOf(
                 "鞋" to listOf(Rect(0.74f, 0.70f, 1.00f, 0.79f)),
             ),
         ),
+        talkSpots = mapOf(
+            1 to TalkSpots(speakers = mapOf("老张" to Rect(0.60f, 0.28f, 0.77f, 0.41f)), detective = Offset(0.34f, 0.46f)),
+        ),
     ),
 )
 
@@ -116,6 +132,9 @@ internal fun endingArt(modeId: String): Int? = caseArts[modeId]?.ending
 
 /** Where each word's object is in a find scene's painting, if it is played on the painting. */
 internal fun findSpots(modeId: String, index: Int): Map<String, List<Rect>>? = caseArts[modeId]?.findSpots?.get(index)
+
+/** Where the people of a dialogue scene stand in its painting, if it is played on the painting. */
+internal fun talkSpots(modeId: String, index: Int): TalkSpots? = caseArts[modeId]?.talkSpots?.get(index)
 
 /** The paintings are dark, so the status and navigation bar icons turn light while they show. */
 @Composable
@@ -171,6 +190,50 @@ private fun PaintedBackButton(onBack: () -> Unit) {
             .background(Night.copy(alpha = 0.55f), RoundedCornerShape(50)),
     ) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "ย้อนกลับ", tint = Cream)
+    }
+}
+
+/** Back button and progress of a scene played on its painting, along its top. */
+@Composable
+internal fun PaintedProgressBar(done: Int, total: Int, onBack: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        IconButton(onClick = onBack, modifier = Modifier.background(Night.copy(alpha = 0.55f), RoundedCornerShape(50))) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "ย้อนกลับ", tint = Cream)
+        }
+        LinearProgressIndicator(
+            progress = { done.toFloat() / total },
+            modifier = Modifier.weight(1f).height(10.dp),
+            color = MaterialTheme.colorScheme.secondary,
+            trackColor = Cream.copy(alpha = 0.35f),
+        )
+        Text(
+            "$done/$total",
+            color = Cream,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .background(Night.copy(alpha = 0.55f), RoundedCornerShape(50))
+                .padding(horizontal = 10.dp, vertical = 4.dp),
+        )
+    }
+}
+
+/** A new clue over a painting, popping in. */
+@Composable
+internal fun PaintedClueCard(clue: String, modifier: Modifier = Modifier) {
+    Card(
+        modifier.fillMaxWidth().appear().pop(true, amount = 0.05f),
+        colors = CardDefaults.cardColors(containerColor = Cream, contentColor = Ink),
+        border = BorderStroke(2.dp, Gold),
+    ) {
+        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("🔍", fontSize = 24.sp)
+            PinyinText(
+                "เบาะแสใหม่! $clue",
+                modifier = Modifier.padding(start = 10.dp),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+            )
+        }
     }
 }
 

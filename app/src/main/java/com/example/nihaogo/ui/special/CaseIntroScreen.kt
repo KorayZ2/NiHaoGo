@@ -3,7 +3,7 @@ package com.example.nihaogo.ui.special
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -12,9 +12,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -48,8 +48,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -71,12 +77,13 @@ import com.example.nihaogo.ui.common.SpeakButton
 import com.example.nihaogo.ui.common.TtsWarning
 import com.example.nihaogo.ui.common.appViewModel
 import com.example.nihaogo.ui.common.appear
-import com.example.nihaogo.ui.common.pop
 import com.example.nihaogo.ui.theme.Cream
 import com.example.nihaogo.ui.theme.Gold
 import com.example.nihaogo.ui.theme.Ink
 import com.example.nihaogo.ui.theme.Night
 import kotlinx.coroutines.launch
+import kotlin.math.PI
+import kotlin.math.cos
 
 class CaseIntroViewModel(private val container: AppContainer, modeId: String) : ViewModel() {
     val mode: SpecialMode = container.content.mode(modeId)
@@ -235,16 +242,17 @@ private fun SuspectsPage(
         val drawnW = constraints.maxWidth.toFloat()
         val drawnH = image.height * drawnW / image.width
 
+        val spots = mode.suspects.mapNotNull { s -> art.spots[s.id]?.let { s.id to it } }
+        SuspectSpotlights(spots, speaking, met, drawnW, drawnH)
+
         mode.suspects.forEach { s ->
             val spot = art.spots[s.id] ?: return@forEach
             with(density) {
-                SuspectSpot(
-                    talking = speaking == s.id,
-                    met = s.id in met,
-                    onClick = { onMeet(s) },
-                    modifier = Modifier
+                Box(
+                    Modifier
                         .offset((spot.left * drawnW).toDp(), (spot.top * drawnH).toDp())
-                        .size((spot.width * drawnW).toDp(), (spot.height * drawnH).toDp()),
+                        .size((spot.width * drawnW).toDp(), (spot.height * drawnH).toDp())
+                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onMeet(s) },
                 )
             }
         }
@@ -269,33 +277,80 @@ private fun SuspectsPage(
     }
 }
 
-/** A suspect's tap area: a bobbing marker above their head, outlined while they talk. */
+private const val ScrimAlpha = 0.62f
+private const val BreathMillis = 2_400
+
+/**
+ * Dims the painting so the suspects ([spots]: id to where they stand in it) stand in pools of
+ * warm light. Those not met yet breathe, one after another, to draw a tap; met ones stay lit and
+ * still; while one talks, the others fall back into the dark.
+ */
 @Composable
-private fun SuspectSpot(talking: Boolean, met: Boolean, onClick: () -> Unit, modifier: Modifier) {
-    val bob by rememberInfiniteTransition(label = "bob").animateFloat(
+private fun SuspectSpotlights(
+    spots: List<Pair<String, Rect>>,
+    speaking: String?,
+    met: List<String>,
+    drawnW: Float,
+    drawnH: Float,
+) {
+    val breath by rememberInfiniteTransition(label = "breath").animateFloat(
         initialValue = 0f,
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(700, easing = LinearEasing), RepeatMode.Reverse),
-        label = "bobY",
+        animationSpec = infiniteRepeatable(tween(BreathMillis, easing = LinearEasing)),
+        label = "breathPhase",
     )
-    Box(
-        modifier
-            .then(if (talking) Modifier.border(3.dp, Gold, RoundedCornerShape(24.dp)) else Modifier)
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick),
-    ) {
-        Text(
-            when {
-                talking -> "💬"
-                met -> "✅"
-                else -> "👆"
-            },
-            fontSize = 26.sp,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = (-30).dp)
-                .graphicsLayer { if (!met && !talking) translationY = -6.dp.toPx() * bob }
-                .pop(talking, amount = 0.25f),
-        )
+    // How much of the dimming each light lifts, and how strongly it breathes.
+    val lights = spots.map { (id, _) ->
+        val target = when {
+            speaking == id -> 1f
+            speaking != null -> 0.1f
+            id in met -> 0.9f
+            else -> 0.8f
+        }
+        animateFloatAsState(target, tween(350), label = "light").value
+    }
+    val beats = spots.map { (id, _) ->
+        animateFloatAsState(if (speaking == null && id !in met) 1f else 0f, tween(350), label = "beat").value
+    }
+    Canvas(Modifier.fillMaxSize().graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }) {
+        drawRect(Night.copy(alpha = ScrimAlpha), size = Size(size.width, drawnH))
+        spots.forEachIndexed { i, (_, spot) ->
+            val phase = (breath + i / spots.size.toFloat()) % 1f
+            val pulse = (0.5f - 0.5f * cos(2 * PI * phase)).toFloat() * beats[i]
+            val light = lights[i] + (1f - lights[i]) * pulse
+            val center = Offset(spot.center.x * drawnW, spot.center.y * drawnH)
+            val radius = spot.width * drawnW * (0.55f + 0.08f * pulse)
+            val ry = spot.height * drawnH * (0.6f + 0.06f * pulse)
+            // A circle squashed into an oval that fits the person standing in it.
+            withTransform({ scale(1f, ry / radius, center) }) {
+                drawCircle(
+                    Brush.radialGradient(
+                        0f to Color.Black.copy(alpha = light),
+                        0.6f to Color.Black.copy(alpha = light),
+                        1f to Color.Transparent,
+                        center = center,
+                        radius = radius,
+                    ),
+                    radius = radius,
+                    center = center,
+                    blendMode = BlendMode.DstOut,
+                )
+                // Warm lamplight on whoever is calling for a tap or talking.
+                val glow = 0.22f * pulse + if (speaking == spots[i].first) 0.16f else 0f
+                if (glow > 0f) {
+                    drawCircle(
+                        Brush.radialGradient(
+                            0f to Gold.copy(alpha = glow),
+                            1f to Color.Transparent,
+                            center = center,
+                            radius = radius,
+                        ),
+                        radius = radius,
+                        center = center,
+                    )
+                }
+            }
+        }
     }
 }
 

@@ -13,9 +13,9 @@ object SpecialRules {
 
     fun sceneKey(modeId: String, index: Int) = "$modeId/$index"
 
-    /** A mode opens once the boss of its [SpecialMode.unlockAfter] category is beaten. */
+    /** A mode opens once the boss of its [SpecialMode.unlockAfter] category is beaten, unless it is still coming soon. */
     fun isModeOpen(mode: SpecialMode, progress: UserProgress): Boolean =
-        progress.devUnlockAll || progress.bossWon(mode.unlockAfter)
+        !mode.comingSoon && (progress.devUnlockAll || progress.bossWon(mode.unlockAfter))
 
     fun sceneState(mode: SpecialMode, index: Int, progress: UserProgress): SceneState = when {
         !isModeOpen(mode, progress) -> SceneState.Locked
