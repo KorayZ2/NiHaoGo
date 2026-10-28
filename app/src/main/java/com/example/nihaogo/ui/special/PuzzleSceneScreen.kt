@@ -1,5 +1,6 @@
 package com.example.nihaogo.ui.special
 
+import com.example.nihaogo.ui.theme.Gold
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -12,9 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.content.Line
@@ -178,11 +178,11 @@ fun PuzzleSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
                 when (state.correct) {
                     true -> Correct
                     false -> Wrong
-                    null -> MaterialTheme.colorScheme.outline
+                    null -> Gold
                 },
                 label = "answerBorder",
             )
-            OutlinedCard(
+            PaperCard(
                 Modifier
                     .fillMaxWidth()
                     .heightIn(min = 80.dp)
@@ -238,7 +238,7 @@ private fun SecretMessage(vm: PuzzleSceneViewModel) {
         fontWeight = FontWeight.Bold,
         modifier = Modifier.pop(true, amount = 0.15f),
     )
-    Card(Modifier.fillMaxWidth()) {
+    PaperCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             // The torn pieces drop into place one after another.
             vm.scene.sentences.forEachIndexed { i, s ->

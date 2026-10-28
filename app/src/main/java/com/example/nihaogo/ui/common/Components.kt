@@ -19,6 +19,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.ColumnScope
@@ -50,7 +51,6 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -76,14 +76,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.core.content.ContextCompat
+import com.example.nihaogo.R
 import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.speech.Speaker
 import com.example.nihaogo.ui.theme.Cream
 import com.example.nihaogo.ui.theme.Gold
+import com.example.nihaogo.ui.theme.Hairline
 import com.example.nihaogo.ui.theme.Ink
 import com.example.nihaogo.ui.theme.Locked
+import com.example.nihaogo.ui.theme.Paper
+import com.example.nihaogo.ui.theme.Peach
 import com.example.nihaogo.ui.theme.Red
+import com.example.nihaogo.ui.theme.RedDeep
+import com.example.nihaogo.ui.theme.RedLight
 import com.example.nihaogo.ui.theme.Wrong
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -101,10 +118,10 @@ fun GameTopBar(
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     CenterAlignedTopAppBar(
-        title = { PinyinText(title, fontWeight = FontWeight.Bold) },
+        title = { PinyinText(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
         navigationIcon = {
             if (onBack != null) {
-                IconButton(onClick = onBack) {
+                RoundIconButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp)) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "ย้อนกลับ")
                 }
             }
@@ -112,7 +129,7 @@ fun GameTopBar(
         actions = {
             if (coins != null) CoinChip(coins, Modifier.padding(end = if (onProfile != null) 0.dp else 12.dp))
             if (onProfile != null) {
-                IconButton(onClick = onProfile) {
+                RoundIconButton(onClick = onProfile, modifier = Modifier.padding(horizontal = 8.dp)) {
                     Icon(Icons.Filled.AccountCircle, contentDescription = "โปรไฟล์")
                 }
             }
@@ -120,6 +137,24 @@ fun GameTopBar(
         },
         // Transparent so the ink-wash background shows through (see InkScaffold).
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent),
+    )
+}
+
+/** Small round paper button with a warm edge, for the top bar. */
+@Composable
+fun RoundIconButton(onClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val press = remember { MutableInteractionSource() }
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+            .size(40.dp)
+            .pressScale(press, 0.9f)
+            .shadow(3.dp, CircleShape, spotColor = Ink.copy(alpha = 0.3f))
+            .background(Paper, CircleShape)
+            .border(1.dp, Hairline, CircleShape),
+        interactionSource = press,
+        colors = IconButtonDefaults.iconButtonColors(contentColor = Ink),
+        content = content,
     )
 }
 
@@ -148,7 +183,7 @@ fun CoinChip(coins: Int, modifier: Modifier = Modifier) {
         shown.animateTo(coins.toFloat(), tween(600))
     }
     val flash = sin(bump.value * PI).toFloat()
-    val base = MaterialTheme.colorScheme.surfaceContainerHigh
+    val base = Paper
     Surface(
         modifier = modifier.graphicsLayer {
             val s = 1f + flash * 0.22f
@@ -157,6 +192,8 @@ fun CoinChip(coins: Int, modifier: Modifier = Modifier) {
         },
         shape = RoundedCornerShape(50),
         color = lerp(base, if (gained) Gold else Wrong.copy(alpha = 0.6f), flash * 0.7f),
+        border = BorderStroke(1.dp, Hairline),
+        shadowElevation = 2.dp,
     ) {
         Text(
             "🪙 ${shown.value.roundToInt()}",
@@ -201,10 +238,14 @@ fun SpeakButton(onClick: () -> Unit, modifier: Modifier = Modifier, slow: Boolea
     val press = remember { MutableInteractionSource() }
     FilledIconButton(
         onClick = onClick,
-        modifier = modifier.size(56.dp).pressScale(press, 0.88f),
+        modifier = modifier
+            .size(56.dp)
+            .pressScale(press, 0.88f)
+            .shadow(4.dp, CircleShape, spotColor = Red),
         interactionSource = press,
+        shape = CircleShape,
         colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = MaterialTheme.colorScheme.tertiary,
+            containerColor = MaterialTheme.colorScheme.primary,
         ),
     ) {
         Text(if (slow) "🐢" else "🔊", fontSize = 24.sp)
@@ -221,7 +262,10 @@ fun MicButton(listening: Boolean, onClick: () -> Unit, modifier: Modifier = Modi
         FilledIconButton(
             onClick = onClick,
             enabled = enabled && !listening,
-            modifier = Modifier.size(72.dp).pressScale(press, 0.88f),
+            modifier = Modifier
+                .size(72.dp)
+                .pressScale(press, 0.88f)
+                .shadow(if (enabled) 8.dp else 0.dp, CircleShape, spotColor = Red),
             interactionSource = press,
             shape = CircleShape,
             colors = IconButtonDefaults.filledIconButtonColors(
@@ -293,7 +337,7 @@ fun rememberMicPermission(onDenied: () -> Unit = {}): (() -> Unit) -> Unit {
 fun TtsWarning(state: Speaker.State, modifier: Modifier = Modifier) {
     if (state == Speaker.State.Ready || state == Speaker.State.Initializing) return
     val context = LocalContext.current
-    Card(
+    PaperCard(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
     ) {
@@ -366,10 +410,10 @@ fun StepResultPanel(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         ) {
-            Text(
-                if (passed) "🎉" else "💪",
-                fontSize = 72.sp,
-                modifier = Modifier.graphicsLayer {
+            Image(
+                painterResource(if (passed) R.drawable.mascot_cheer else R.drawable.mascot_try),
+                contentDescription = null,
+                modifier = Modifier.size(150.dp).graphicsLayer {
                     scaleX = emoji.value
                     scaleY = emoji.value
                     rotationZ = (1 - emoji.value) * if (passed) -30f else 0f
@@ -442,7 +486,10 @@ private fun AnimatedStars(shown: Int, size: Int) {
     }
 }
 
-/** [Button] that shrinks when pressed and clicks. */
+private val PillShape = RoundedCornerShape(50)
+private val ButtonGradient = Brush.verticalGradient(listOf(RedLight, Red, RedDeep))
+
+/** Red pill [Button] with a soft gradient and glow, that shrinks when pressed and clicks. */
 @Composable
 fun GameButton(
     onClick: () -> Unit,
@@ -457,14 +504,33 @@ fun GameButton(
             sfx.tap()
             onClick()
         },
-        modifier = modifier.pressScale(press),
+        modifier = modifier
+            .heightIn(min = 52.dp)
+            .pressScale(press)
+            .then(
+                if (enabled) {
+                    Modifier
+                        .shadow(6.dp, PillShape, spotColor = Red)
+                        .background(ButtonGradient, PillShape)
+                } else {
+                    Modifier
+                }
+            ),
         enabled = enabled,
+        shape = PillShape,
+        // Disabled stays a solid grey pill so it still reads as a button over the painting.
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent,
+            disabledContainerColor = Locked,
+            disabledContentColor = Color.White,
+        ),
+        contentPadding = PaddingValues(horizontal = 28.dp, vertical = 12.dp),
         interactionSource = press,
         content = content,
     )
 }
 
-/** [OutlinedButton] that shrinks when pressed and clicks. */
+/** Paper pill [OutlinedButton] edged in red, that shrinks when pressed and clicks. */
 @Composable
 fun GameOutlinedButton(
     onClick: () -> Unit,
@@ -479,8 +545,16 @@ fun GameOutlinedButton(
             sfx.tap()
             onClick()
         },
-        modifier = modifier.pressScale(press),
+        modifier = modifier.heightIn(min = 52.dp).pressScale(press),
         enabled = enabled,
+        shape = PillShape,
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Paper,
+            disabledContainerColor = Paper.copy(alpha = 0.85f),
+            disabledContentColor = Locked,
+        ),
+        border = BorderStroke(1.5.dp, if (enabled) MaterialTheme.colorScheme.primary else Locked.copy(alpha = 0.6f)),
+        contentPadding = PaddingValues(horizontal = 28.dp, vertical = 12.dp),
         interactionSource = press,
         content = content,
     )
@@ -496,9 +570,9 @@ fun GameCard(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     sound: Boolean = true,
-    colors: CardColors = CardDefaults.cardColors(),
-    border: BorderStroke? = null,
-    elevation: CardElevation = CardDefaults.cardElevation(),
+    colors: CardColors = CardDefaults.cardColors(containerColor = Paper),
+    border: BorderStroke? = BorderStroke(1.dp, Hairline),
+    elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val sfx = rememberSfx()
@@ -510,12 +584,35 @@ fun GameCard(
         },
         modifier = modifier.pressScale(press, 0.96f),
         enabled = enabled,
+        shape = MaterialTheme.shapes.large,
         colors = colors,
         border = border,
         elevation = elevation,
         interactionSource = press,
         content = content,
     )
+}
+
+/**
+ * [Card] in the app's look: bright paper, a warm hairline edge and a soft shadow. Clickable only
+ * when [onClick] is given; use [GameCard] for game choices that should shrink and click.
+ */
+@Composable
+fun PaperCard(
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
+    shape: Shape = MaterialTheme.shapes.large,
+    colors: CardColors = CardDefaults.cardColors(containerColor = Paper),
+    elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    border: BorderStroke? = BorderStroke(1.dp, Hairline),
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    if (onClick != null) {
+        Card(onClick, modifier, enabled, shape, colors, elevation, border, content = content)
+    } else {
+        Card(modifier, shape, colors, elevation, border, content)
+    }
 }
 
 /** Rice-paper word card: dark ink hanzi with Chinese-red pinyin, edged in gold. */
@@ -542,9 +639,10 @@ fun TileChip(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
 
 @Composable
 fun FeedbackCard(title: String, tip: String, color: Color) {
-    Card(
+    PaperCard(
         Modifier.fillMaxWidth().appear(),
-        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.15f)),
+        colors = CardDefaults.cardColors(containerColor = lerp(Paper, color, 0.15f)),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.5f)),
     ) {
         Column(Modifier.padding(12.dp)) {
             Text(title, fontWeight = FontWeight.Bold, color = color)
@@ -555,16 +653,33 @@ fun FeedbackCard(title: String, tip: String, color: Color) {
 
 @Composable
 fun ProgressHeader(current: Int, total: Int, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxWidth()) {
-        LinearProgressIndicator(
-            progress = { current.toFloat() / total },
-            modifier = Modifier.fillMaxWidth().height(10.dp),
-            color = MaterialTheme.colorScheme.secondary,
-        )
+    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        ProgressBar(current.toFloat() / total, Modifier.weight(1f))
         Text(
-            "$current / $total",
-            modifier = Modifier.align(Alignment.End),
-            style = MaterialTheme.typography.labelMedium,
+            "$current/$total",
+            modifier = Modifier.padding(start = 12.dp),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** Rounded red bar on a peach track that glides to [fraction]. */
+@Composable
+fun ProgressBar(fraction: Float, modifier: Modifier = Modifier, height: Dp = 10.dp) {
+    val shown by animateFloatAsState(fraction.coerceIn(0f, 1f), tween(450), label = "progress")
+    Box(
+        modifier
+            .height(height)
+            .clip(PillShape)
+            .background(Peach),
+    ) {
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(shown)
+                .clip(PillShape)
+                .background(Brush.horizontalGradient(listOf(RedLight, Red))),
         )
     }
 }

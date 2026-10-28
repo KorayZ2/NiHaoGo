@@ -1,5 +1,17 @@
 package com.example.nihaogo.ui.special
 
+import com.example.nihaogo.ui.theme.Cream
+import com.example.nihaogo.ui.common.SpeakButton
+import com.example.nihaogo.ui.common.MascotSays
+import com.example.nihaogo.R
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import com.example.nihaogo.ui.theme.Paper
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.NiHaoGoApp
 import com.example.nihaogo.data.content.OldWord
@@ -215,7 +227,7 @@ private fun NewWordsIntro(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         TtsWarning(tts)
-        Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)) {
+        PaperCard(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer), border = BorderStroke(1.5.dp, Gold)) {
             Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(scene.emoji, fontSize = 56.sp)
                 PinyinText(scene.titleZh, pinyin = scene.titlePinyin, fontSize = 28.sp, fontWeight = FontWeight.Bold)
@@ -223,7 +235,8 @@ private fun NewWordsIntro(
                 Text(scene.introTh, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
             }
         }
-        Text("คำศัพท์ใหม่ในฉากนี้ (แตะเพื่อฟังเสียง)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        MascotSays(R.drawable.mascot_read, "มาฟังคำศัพท์ใหม่ของฉากนี้ก่อนนะ แตะคำเพื่อฟังเสียง", size = 84.dp)
+        Text("คำศัพท์ใหม่ในฉากนี้", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         scene.words.forEachIndexed { i, word ->
             NewWordRow(word, onClick = { onSpeak(word.hanzi) }, modifier = Modifier.appear(100 + i * 50))
         }
@@ -245,8 +258,15 @@ private fun NewWordsIntro(
 @Composable
 private fun NewWordRow(word: Word, onClick: () -> Unit, modifier: Modifier = Modifier, stage: Int? = null) {
     GameCard(onClick = onClick, sound = false, modifier = modifier.fillMaxWidth()) {
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(word.emoji, fontSize = 32.sp)
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier
+                    .size(52.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(Cream)
+                    .border(1.dp, Gold.copy(alpha = 0.6f), MaterialTheme.shapes.medium),
+                contentAlignment = Alignment.Center,
+            ) { Text(word.emoji, fontSize = 28.sp) }
             PinyinText(
                 word.hanzi,
                 pinyin = word.pinyin,
@@ -263,7 +283,7 @@ private fun NewWordRow(word: Word, onClick: () -> Unit, modifier: Modifier = Mod
                     Text("จากหมวด $stage", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                 }
             }
-            Text("  🔊")
+            SpeakButton(onClick = onClick, modifier = Modifier.padding(start = 8.dp).size(40.dp))
         }
     }
 }
@@ -271,9 +291,9 @@ private fun NewWordRow(word: Word, onClick: () -> Unit, modifier: Modifier = Mod
 /** A clue card for the detective's notebook. */
 @Composable
 fun ClueCard(text: String, modifier: Modifier = Modifier, isNew: Boolean = false) {
-    Card(
+    PaperCard(
         modifier = modifier.fillMaxWidth().appear(enabled = isNew).pop(isNew, amount = 0.05f),
-        colors = CardDefaults.cardColors(containerColor = Gold.copy(alpha = if (isNew) 0.45f else 0.2f)),
+        colors = CardDefaults.cardColors(containerColor = lerp(Paper, Gold, if (isNew) 0.45f else 0.2f)),
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(if (isNew) "🔍" else "📌", fontSize = 22.sp)

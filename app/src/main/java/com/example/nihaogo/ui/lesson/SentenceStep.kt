@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,9 +26,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.nihaogo.AppContainer
+import com.example.nihaogo.R
 import com.example.nihaogo.data.content.Sentence
 import com.example.nihaogo.data.content.Step
 import com.example.nihaogo.data.user.GameRules
+import com.example.nihaogo.data.user.Mission
 import com.example.nihaogo.speech.ChineseText
 import com.example.nihaogo.speech.Heard
 import com.example.nihaogo.ui.common.FeedbackCard
@@ -38,7 +39,10 @@ import com.example.nihaogo.ui.common.GameOutlinedButton
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.HanziBlock
 import com.example.nihaogo.ui.common.InkScaffold
+import com.example.nihaogo.ui.common.Mascot
 import com.example.nihaogo.ui.common.MicButton
+import com.example.nihaogo.ui.common.PaperCard
+import com.example.nihaogo.ui.common.PromptCard
 import com.example.nihaogo.ui.common.PinyinText
 import com.example.nihaogo.ui.common.ProgressHeader
 import com.example.nihaogo.ui.common.SpeakButton
@@ -50,6 +54,7 @@ import com.example.nihaogo.ui.common.appViewModel
 import com.example.nihaogo.ui.common.recordStep
 import com.example.nihaogo.ui.common.rememberMicPermission
 import com.example.nihaogo.ui.theme.Correct
+import com.example.nihaogo.ui.theme.Gold
 import com.example.nihaogo.ui.theme.Wrong
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -156,6 +161,7 @@ class SentenceViewModel(private val container: AppContainer, private val categor
                 val score = s.firstTryCorrect * 100 / sentences.size
                 val stars = GameRules.starsForScore(score)
                 val outcome = container.progress.recordStep(categoryId, Step.Sentence, stars)
+                if (stars > 0) container.missions.add(Mission.Lesson)
                 _state.update { it.copy(result = StepResult(score, stars, outcome.coinsEarned)) }
             }
         }
@@ -195,18 +201,30 @@ fun SentenceStepScreen(categoryId: String, onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             ProgressHeader(state.index + 1, vm.sentences.size)
-            Text("แปลเป็นภาษาจีน", style = MaterialTheme.typography.labelLarge)
-            Text("“${sentence.thai}”", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // The qilin writes while the learner works, then reacts to the answer.
+                Mascot(
+                    when (state.check) {
+                        SentenceState.Check.Correct -> R.drawable.mascot_thumbs
+                        SentenceState.Check.Wrong -> R.drawable.mascot_think
+                        else -> R.drawable.mascot_write
+                    },
+                    size = 92.dp,
+                )
+                PromptCard("แปลเป็นภาษาจีน", Modifier.padding(start = 8.dp)) {
+                    Text("“${sentence.thai}”", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                }
+            }
 
             val answerBorder by animateColorAsState(
                 when (state.check) {
                     SentenceState.Check.Correct -> Correct
                     SentenceState.Check.Wrong -> Wrong
-                    else -> MaterialTheme.colorScheme.outline
+                    else -> Gold
                 },
                 label = "answerBorder",
             )
-            OutlinedCard(
+            PaperCard(
                 Modifier
                     .fillMaxWidth()
                     .heightIn(min = 80.dp)
@@ -216,6 +234,14 @@ fun SentenceStepScreen(categoryId: String, onBack: () -> Unit) {
                     ),
                 border = BorderStroke(2.dp, answerBorder),
             ) {
+                if (state.answer.isEmpty()) {
+                    Text(
+                        "แตะคำด้านล่างเพื่อเรียงประโยค",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 FlowRow(
                     Modifier.padding(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

@@ -3,6 +3,47 @@ package com.example.nihaogo.ui.boss
 import android.app.Activity
 import android.util.Log
 import androidx.activity.compose.LocalActivity
+import androidx.annotation.DrawableRes
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextOverflow
+import com.example.nihaogo.ui.common.pop
+import com.example.nihaogo.ui.common.shake
+import kotlinx.coroutines.Job
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import com.example.nihaogo.R
+import com.example.nihaogo.ui.common.ProgressBar
+import com.example.nihaogo.ui.theme.Cream
+import com.example.nihaogo.ui.theme.Gold
+import com.example.nihaogo.ui.theme.Hairline
+import com.example.nihaogo.ui.theme.InkSoft
+import com.example.nihaogo.ui.theme.Paper
+import com.example.nihaogo.ui.theme.Red
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +59,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
@@ -39,6 +79,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.ai.BossLine
@@ -50,6 +91,7 @@ import com.example.nihaogo.data.content.SpecialMode
 import com.example.nihaogo.data.content.Step
 import com.example.nihaogo.data.content.Word
 import com.example.nihaogo.data.user.GameRules
+import com.example.nihaogo.data.user.Mission
 import com.example.nihaogo.data.user.SpecialRules
 import com.example.nihaogo.data.user.UserProgress
 import com.example.nihaogo.monetization.RewardedAds
@@ -90,6 +132,13 @@ sealed interface ChatItem {
     data class Alternative(val line: Line) : ChatItem
 }
 
+/** How the qilin boss looks: waiting, pleased with a right answer, or roaring at a wrong one. */
+enum class BossMood(@DrawableRes val drawable: Int) {
+    Idle(R.drawable.boss_qilin_idle),
+    Win(R.drawable.boss_qilin_win),
+    Roar(R.drawable.boss_qilin_roar),
+}
+
 data class BossState(
     val messages: List<ChatItem> = emptyList(),
     val current: BossLine? = null,
@@ -103,6 +152,7 @@ data class BossState(
     val result: StepResult? = null,
     /** Replaying after a loss: the player confirms the free retry or the fee before the boss starts. */
     val retryGate: Boolean = false,
+    val mood: BossMood = BossMood.Idle,
 )
 
 /** Whose boss conversation this is, which decides where the result is saved. */
@@ -129,6 +179,8 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
     private val knownWords: List<Word> = category?.words ?: mode!!.allWords
 
     val title: String = if (category != null) "บอส: ${boss.name}" else "${mode!!.emoji} ${boss.name}"
+    /** Chapter bosses are played by the qilin; a career's customer keeps its emoji. */
+    val qilin: Boolean = category != null
     val passedMessage: String = when {
         category != null -> "ชนะบอสแล้ว! ได้ถ้วยรางวัล 🏆"
         mode!!.ranks.isNotEmpty() -> "เลื่อนตำแหน่งเป็น${mode.ranks.last()}แล้ว! 🎖️"
@@ -149,6 +201,7 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
 
     /** Re-runs the call that failed. */
     private var retry: (() -> Unit)? = null
+    private var calmDown: Job? = null
 
     init {
         open()
@@ -213,6 +266,7 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
         val isFinal = _state.value.answered + 1 >= GameRules.BOSS_ROUNDS
         val judgement = engine.answer(text, isFinal)
         container.sfx.answer(judgement.correct)
+        react(judgement.correct)
         _state.update {
             val added = buildList {
                 if (judgement.feedbackTh.isNotBlank()) add(ChatItem.Feedback(judgement.correct, judgement.feedbackTh))
@@ -230,6 +284,16 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
         if (isFinal) finish()
     }
 
+    /** The qilin cheers or roars at the answer for a moment, then waits again. */
+    private fun react(correct: Boolean) {
+        _state.update { it.copy(mood = if (correct) BossMood.Win else BossMood.Roar) }
+        calmDown?.cancel()
+        calmDown = viewModelScope.launch {
+            delay(2_500)
+            _state.update { it.copy(mood = BossMood.Idle) }
+        }
+    }
+
     private suspend fun finish() {
         delay(2_000) // let the farewell line play before the result screen
         val correct = _state.value.correct
@@ -239,6 +303,7 @@ class BossViewModel(private val container: AppContainer, private val target: Bos
             is BossTarget.SpecialScene -> container.progress.recordScene(mode!!, target.sceneIndex, stars)
         }
         if (stars > 0) container.progress.update { GameRules.markBossWon(it, target.key) }
+        if (stars > 0 && target is BossTarget.CategoryBoss) container.missions.add(Mission.Lesson)
         _state.update { it.copy(result = StepResult(correct * 100 / GameRules.BOSS_ROUNDS, stars, outcome.coinsEarned)) }
     }
 
@@ -336,37 +401,44 @@ fun BossScreen(target: BossTarget, onBack: () -> Unit) {
             if (state.messages.isNotEmpty()) listState.animateScrollToItem(state.messages.size)
         }
 
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            item { BossHeader(vm, state) }
-            items(state.messages) { item ->
-                Box(Modifier.animateItem()) {
-                    when (item) {
-                        is ChatItem.BossSays -> BossBubble(boss.emoji, item.line, onSpeak = { vm.speak(item.line) })
-                        is ChatItem.PlayerSays -> PlayerBubble(item.text)
-                        is ChatItem.Feedback -> FeedbackLine(item)
-                        is ChatItem.Alternative -> AlternativeCard(item.line, onSpeak = { vm.speakText(item.line.hanzi) })
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            if (vm.qilin) QilinStage(vm, state)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                item { if (vm.qilin) ScenarioNote(vm) else BossHeader(vm, state) }
+                items(state.messages) { item ->
+                    Box(Modifier.animateItem()) {
+                        when (item) {
+                            is ChatItem.BossSays -> BossBubble(
+                                emoji = boss.emoji.takeUnless { vm.qilin },
+                                line = item.line,
+                                onSpeak = { vm.speak(item.line) },
+                            )
+                            is ChatItem.PlayerSays -> PlayerBubble(item.text)
+                            is ChatItem.Feedback -> FeedbackLine(item)
+                            is ChatItem.Alternative -> AlternativeCard(item.line, onSpeak = { vm.speakText(item.line.hanzi) })
+                        }
                     }
                 }
-            }
-            if (state.busy) {
-                item {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        CircularProgressIndicator(Modifier.size(20.dp))
-                        PinyinText("  ${boss.name} กำลังคิด…")
+                if (state.busy) {
+                    item {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(Modifier.size(20.dp))
+                            PinyinText("  ${boss.name} กำลังคิด…")
+                        }
                     }
                 }
-            }
-            state.error?.let { error ->
-                item {
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
-                        Column(Modifier.padding(12.dp)) {
-                            Text(error, color = MaterialTheme.colorScheme.onErrorContainer)
-                            TextButton(onClick = vm::retryFailed) { Text("ลองใหม่") }
+                state.error?.let { error ->
+                    item {
+                        PaperCard(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
+                            Column(Modifier.padding(12.dp)) {
+                                Text(error, color = MaterialTheme.colorScheme.onErrorContainer)
+                                TextButton(onClick = vm::retryFailed) { Text("ลองใหม่") }
+                            }
                         }
                     }
                 }
@@ -390,7 +462,14 @@ private fun RetryGatePanel(
     val adsLeft = vm.adsLeft(progress)
     Box(modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(vm.boss.emoji, fontSize = 72.sp)
+            Row(verticalAlignment = Alignment.Bottom) {
+                Image(painterResource(R.drawable.mascot_try), contentDescription = null, modifier = Modifier.size(140.dp))
+                if (vm.qilin) {
+                    Image(painterResource(BossMood.Roar.drawable), contentDescription = null, modifier = Modifier.size(120.dp))
+                } else {
+                    BossAvatar(vm.boss.emoji, 72.dp)
+                }
+            }
             Text("ท้าบอสอีกครั้ง", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text(
                 when (entry) {
@@ -423,34 +502,173 @@ private fun RetryGatePanel(
 @Composable
 private fun BossHeader(vm: BossViewModel, state: BossState) {
     val boss = vm.boss
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(boss.emoji, fontSize = 48.sp)
-            Column(Modifier.padding(start = 12.dp).weight(1f)) {
-                PinyinText(boss.name, pinyin = boss.namePinyin, fontWeight = FontWeight.Bold)
-                Text(boss.roleTh, style = MaterialTheme.typography.bodySmall)
-                Text(boss.scenarioTh, style = MaterialTheme.typography.bodyMedium)
+    PaperCard(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(2.dp, Gold),
+        elevation = CardDefaults.cardElevation(3.dp),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BossAvatar(boss.emoji, 64.dp)
+                Column(Modifier.padding(start = 12.dp).weight(1f)) {
+                    Text("บอสประจำบท", style = MaterialTheme.typography.labelMedium, color = Red, fontWeight = FontWeight.Bold)
+                    PinyinText(boss.name, pinyin = boss.namePinyin, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(boss.roleTh, style = MaterialTheme.typography.bodySmall, color = InkSoft)
+                }
+            }
+            Text(boss.scenarioTh, style = MaterialTheme.typography.bodyMedium)
+            val round = minOf(state.answered + 1, GameRules.BOSS_ROUNDS)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ProgressBar(state.answered.toFloat() / GameRules.BOSS_ROUNDS, Modifier.weight(1f))
                 Text(
-                    "รอบ ${minOf(state.answered + 1, GameRules.BOSS_ROUNDS)}/${GameRules.BOSS_ROUNDS} · ถูก ${state.correct} · " +
-                        if (vm.usesAi) "🤖 Gemini" else "📜 บทสำรอง",
+                    "  รอบ $round/${GameRules.BOSS_ROUNDS} · ถูก ${state.correct}",
                     style = MaterialTheme.typography.labelLarge,
                 )
             }
+            Text(
+                if (vm.usesAi) "🤖 คุยกับ AI (Gemini)" else "📜 บทสำรอง",
+                style = MaterialTheme.typography.labelMedium,
+                color = InkSoft,
+            )
         }
     }
 }
 
+/**
+ * The qilin boss standing over the chat, breathing and reacting to each answer,
+ * with a small frame beside it for the boss's name and the score.
+ * Shrinks while the keyboard is up so the chat keeps its room.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun BossBubble(emoji: String, line: BossLine, onSpeak: () -> Unit) {
+private fun QilinStage(vm: BossViewModel, state: BossState) {
+    val compact = WindowInsets.isImeVisible
+    val height by animateDpAsState(if (compact) 100.dp else 180.dp, label = "stage")
+    val breath = rememberInfiniteTransition(label = "breath")
+    val bob by breath.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(1_600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "bob",
+    )
+    Row(
+        Modifier.fillMaxWidth().height(height).padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.fillMaxHeight().aspectRatio(0.95f), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Brush.radialGradient(listOf(Gold.copy(alpha = 0.45f), Color.Transparent))),
+            )
+            Box(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth(0.7f)
+                    .height(12.dp)
+                    .background(Color.Black.copy(alpha = 0.12f), CircleShape),
+            )
+            Crossfade(state.mood, label = "qilin") { mood ->
+                Image(
+                    painterResource(mood.drawable),
+                    contentDescription = vm.boss.name,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pop(mood == BossMood.Win, amount = 0.12f)
+                        .shake(mood == BossMood.Roar)
+                        .graphicsLayer {
+                            translationY = -bob * 4.dp.toPx()
+                            scaleY = 1f + bob * 0.015f
+                        },
+                )
+            }
+        }
+        BossFrame(vm, state, compact, Modifier.padding(start = 8.dp).weight(1f))
+    }
+}
+
+/** The small frame by the qilin: who it plays in this chapter and how the rounds are going. */
+@Composable
+private fun BossFrame(vm: BossViewModel, state: BossState, compact: Boolean, modifier: Modifier = Modifier) {
+    val boss = vm.boss
+    val round = minOf(state.answered + 1, GameRules.BOSS_ROUNDS)
+    PaperCard(
+        modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(1.5.dp, Gold),
+        elevation = CardDefaults.cardElevation(3.dp),
+    ) {
+        Column(
+            Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 4.dp),
+        ) {
+            if (!compact) {
+                Text("บอสประจำบท", style = MaterialTheme.typography.labelSmall, color = Red, fontWeight = FontWeight.Bold)
+            }
+            PinyinText(boss.name, pinyin = boss.namePinyin, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            if (!compact) {
+                Text(
+                    boss.roleTh,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = InkSoft,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            ProgressBar(state.answered.toFloat() / GameRules.BOSS_ROUNDS, Modifier.fillMaxWidth(), height = 8.dp)
+            Text("รอบ $round/${GameRules.BOSS_ROUNDS} · ถูก ${state.correct}", style = MaterialTheme.typography.labelMedium)
+        }
+    }
+}
+
+/** The chapter's situation, opening the chat as a short note rather than a card. */
+@Composable
+private fun ScenarioNote(vm: BossViewModel) {
+    Surface(
+        color = Paper.copy(alpha = 0.9f),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, Hairline),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Text(vm.boss.scenarioTh, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                if (vm.usesAi) "🤖 คุยกับ AI (Gemini)" else "📜 บทสำรอง",
+                style = MaterialTheme.typography.labelSmall,
+                color = InkSoft,
+            )
+        }
+    }
+}
+
+/** The boss's emoji in a round cream frame edged in gold. */
+@Composable
+private fun BossAvatar(emoji: String, size: Dp) {
+    Box(
+        Modifier
+            .size(size)
+            .shadow(3.dp, CircleShape)
+            .clip(CircleShape)
+            .background(Cream)
+            .border(2.dp, Gold, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) { Text(emoji, fontSize = (size.value * 0.55f).sp) }
+}
+
+@Composable
+private fun BossBubble(emoji: String?, line: BossLine, onSpeak: () -> Unit) {
     Row(verticalAlignment = Alignment.Top) {
-        Text(emoji, fontSize = 32.sp)
-        Card(Modifier.padding(start = 8.dp).widthIn(max = 300.dp)) {
+        if (emoji != null) BossAvatar(emoji, 40.dp)
+        PaperCard(
+            Modifier.padding(start = if (emoji != null) 8.dp else 0.dp).widthIn(max = 300.dp),
+            shape = RoundedCornerShape(topStart = 4.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 20.dp),
+        ) {
             Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f, fill = false)) {
                     PinyinText(line.hanzi, pinyin = line.pinyin, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    Text(line.thai, style = MaterialTheme.typography.bodySmall)
+                    Text(line.thai, style = MaterialTheme.typography.bodySmall, color = InkSoft)
                 }
-                TextButton(onClick = onSpeak) { Text("🔊", fontSize = 20.sp) }
+                SpeakButton(onClick = onSpeak, modifier = Modifier.padding(start = 8.dp).size(40.dp))
             }
         }
     }
@@ -461,7 +679,8 @@ private fun PlayerBubble(text: String) {
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
         Surface(
             color = MaterialTheme.colorScheme.primary,
-            shape = MaterialTheme.shapes.large,
+            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 4.dp, bottomEnd = 20.dp, bottomStart = 20.dp),
+            shadowElevation = 3.dp,
             modifier = Modifier.widthIn(max = 280.dp),
         ) {
             PinyinText(
@@ -491,7 +710,14 @@ private fun InputBar(vm: BossViewModel, state: BossState) {
     val withMic = rememberMicPermission()
     val current = state.current
 
-    Surface(tonalElevation = 3.dp, modifier = Modifier.navigationBarsPadding().imePadding()) {
+    val sheet = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    Surface(
+        color = Paper,
+        shape = sheet,
+        shadowElevation = 12.dp,
+        border = BorderStroke(1.dp, Hairline),
+        modifier = Modifier.navigationBarsPadding().imePadding(),
+    ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (state.hintShown && current != null) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.appear()) {
@@ -513,13 +739,25 @@ private fun InputBar(vm: BossViewModel, state: BossState) {
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("พูดหรือพิมพ์ภาษาจีน") },
                     singleLine = true,
+                    shape = RoundedCornerShape(50),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Red,
+                        unfocusedBorderColor = Hairline,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                    ),
                 )
-                FilledIconButton(onClick = vm::send, enabled = state.input.isNotBlank() && !state.busy) {
+                FilledIconButton(
+                    onClick = vm::send,
+                    enabled = state.input.isNotBlank() && !state.busy,
+                    modifier = Modifier.size(48.dp),
+                    shape = CircleShape,
+                ) {
                     Text("➤", fontSize = 20.sp)
                 }
             }
             if (!state.hintShown && current != null && current.hintHanzi.isNotBlank()) {
-                GameButton(onClick = vm::showHint, enabled = !state.busy, modifier = Modifier.fillMaxWidth()) {
+                GameOutlinedButton(onClick = vm::showHint, enabled = !state.busy, modifier = Modifier.fillMaxWidth()) {
                     Text("💡 ขอคำใบ้ (${GameRules.HINT_COST} 🪙)")
                 }
             }

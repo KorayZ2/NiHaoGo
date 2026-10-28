@@ -1,5 +1,6 @@
 package com.example.nihaogo.ui.special
 
+import com.example.nihaogo.ui.theme.Paper
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
@@ -24,7 +25,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.data.content.Line
 import com.example.nihaogo.data.content.ModeKind
@@ -134,7 +135,8 @@ class DialogueSceneViewModel(container: AppContainer, modeId: String, index: Int
         }
     }
 
-    fun canGoNext(s: DialogueState): Boolean = s.solved && (scene.turns[s.turn].task == null || s.taskSolved)
+    fun canGoNext(s: DialogueState): Boolean =
+        container.devSkip.value || s.solved && (scene.turns[s.turn].task == null || s.taskSolved)
 
     fun next() {
         val s = _state.value
@@ -245,7 +247,7 @@ fun SpeakerHeader(person: Person) {
 /** Chinese line with pinyin above, Thai below and a replay button. */
 @Composable
 fun SpeechBubble(line: Line, onSpeak: () -> Unit, modifier: Modifier = Modifier) {
-    Card(modifier.fillMaxWidth()) {
+    PaperCard(modifier.fillMaxWidth()) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 PinyinText(line.hanzi, pinyin = line.pinyin, fontSize = 24.sp, fontWeight = FontWeight.Bold)
@@ -266,7 +268,7 @@ private fun OptionCard(
     onClick: () -> Unit,
     painted: Boolean = false,
 ) {
-    val idle = if (painted) Cream else MaterialTheme.colorScheme.surfaceContainerHigh
+    val idle = if (painted) Cream else Paper
     val color by animateColorAsState(
         when {
             right -> Correct.copy(alpha = 0.3f).let { if (painted) it.compositeOver(idle) else it }
@@ -310,7 +312,7 @@ private fun TaskChoices(task: Task, state: DialogueState, onChoose: (Int) -> Uni
                 when {
                     right -> Correct.copy(alpha = 0.35f)
                     wrong -> Wrong.copy(alpha = 0.35f)
-                    else -> MaterialTheme.colorScheme.surfaceContainerHigh
+                    else -> Paper
                 },
                 label = "task",
             )
@@ -462,10 +464,11 @@ private fun PaintedTalk(
                     )
                     TaskChoices(task, state, onChoose = vm::chooseTask, modifier = Modifier.appear(250))
                 }
-                if (vm.canGoNext(state)) {
-                    GameButton(onClick = vm::next, modifier = Modifier.fillMaxWidth().appear(600)) {
-                        Text(if (state.turn < vm.scene.turns.lastIndex) "ถัดไป ▶" else "ดูผลลัพธ์")
-                    }
+            }
+            // Outside the branches so the debug skip shows it before the question is answered too.
+            if (vm.canGoNext(state)) {
+                GameButton(onClick = vm::next, modifier = Modifier.fillMaxWidth().appear(600)) {
+                    Text(if (state.turn < vm.scene.turns.lastIndex) "ถัดไป ▶" else "ดูผลลัพธ์")
                 }
             }
         }
@@ -496,7 +499,7 @@ private fun PointingBubble(
     val minTop = WindowInsets.statusBars.getTop(LocalDensity.current) + with(LocalDensity.current) { 60.dp.roundToPx() }
     Layout(
         content = {
-            Card(
+            PaperCard(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Cream, contentColor = Ink),
                 border = BorderStroke(BubbleBorder, Gold),

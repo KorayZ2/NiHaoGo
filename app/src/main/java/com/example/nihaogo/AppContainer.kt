@@ -18,14 +18,22 @@ import com.example.nihaogo.data.content.SpecialMode
 import com.example.nihaogo.data.content.Word
 import com.example.nihaogo.data.user.AccountManager
 import com.example.nihaogo.data.user.AuthRepository
+import com.example.nihaogo.data.user.DailyMissions
 import com.example.nihaogo.data.user.LocalProgressRepository
 import com.example.nihaogo.data.user.ProgressRepository
 import com.example.nihaogo.data.user.ProgressSync
 import com.example.nihaogo.monetization.RewardedAds
 import com.example.nihaogo.speech.Speaker
 import com.example.nihaogo.speech.SpeechInput
+import androidx.core.content.edit
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -40,6 +48,7 @@ class AppContainer(context: Context) {
     private val auth = AuthRepository()
     val progressSync = ProgressSync(progress, auth)
     val accounts = AccountManager(auth, progress, progressSync)
+    val missions = DailyMissions(appContext, progress)
     val speaker by lazy { Speaker(appContext, sfx) }
     val speechInput by lazy { SpeechInput(appContext) }
     val settings = AppSettings(appContext)
@@ -47,6 +56,26 @@ class AppContainer(context: Context) {
     val sfx = Sfx(appContext, settings)
     val gemini = GeminiClient(BuildConfig.GEMINI_API_KEY, BuildConfig.GEMINI_MODEL)
     val rewardedAds = RewardedAds(appContext, BuildConfig.ADMOB_REWARDED_ID, progress)
+
+    /**
+     * Debug builds with the map's unlock switch on: lessons and scenes let the tester move on
+     * without passing (e.g. without speaking). It can't change inside a lesson, so reading
+     * [StateFlow.value] there is enough.
+     */
+    val devSkip: StateFlow<Boolean> = progress.progress
+        .map { BuildConfig.DEBUG && it.devUnlockAll }
+        .stateIn(CoroutineScope(SupervisorJob() + Dispatchers.Default), SharingStarted.Eagerly, false)
+
+    /**
+     * Debug builds only: signs out and forgets everything this device knows, as on a fresh
+     * install. The app must be restarted afterwards. TODO: remove before release.
+     */
+    suspend fun resetAsNewUser() {
+        accounts.resetAsNewUser()
+        listOf("settings", "missions", "challenge").forEach { name ->
+            appContext.getSharedPreferences(name, Context.MODE_PRIVATE).edit(commit = true) { clear() }
+        }
+    }
 
     /** What the cover's loading bar waits for, each with the line shown while it is the next to finish. */
     enum class StartupStep(val label: String) {

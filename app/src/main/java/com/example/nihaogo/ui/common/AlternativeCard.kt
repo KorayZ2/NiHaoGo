@@ -1,10 +1,11 @@
 package com.example.nihaogo.ui.common
 
+import com.example.nihaogo.ui.theme.Paper
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,9 +26,9 @@ fun AlternativeCard(
     modifier: Modifier = Modifier,
     label: String = "💡 พูดอีกแบบได้ว่า",
 ) {
-    Card(
+    PaperCard(
         modifier = modifier.fillMaxWidth().appear(),
-        colors = CardDefaults.cardColors(containerColor = Gold.copy(alpha = 0.2f)),
+        colors = CardDefaults.cardColors(containerColor = lerp(Paper, Gold, 0.2f)),
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {

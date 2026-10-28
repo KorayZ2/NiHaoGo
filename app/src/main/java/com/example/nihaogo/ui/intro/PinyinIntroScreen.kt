@@ -1,5 +1,9 @@
 package com.example.nihaogo.ui.intro
 
+import com.example.nihaogo.R
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+import com.example.nihaogo.ui.theme.Paper
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
@@ -22,7 +26,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.content.PinyinBasics
@@ -257,9 +261,17 @@ private fun IntroPage(emoji: String, title: String, subtitle: String, content: @
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(emoji, fontSize = 40.sp)
-        PinyinText(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(subtitle, style = MaterialTheme.typography.bodyLarge)
+        // Each page opens on a gold-edged sign with the qilin teacher beside it.
+        PaperCard(Modifier.fillMaxWidth(), border = BorderStroke(1.5.dp, Gold)) {
+            Row(Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(emoji, fontSize = 28.sp)
+                    PinyinText(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Image(painterResource(R.drawable.mascot_idea), contentDescription = null, modifier = Modifier.size(96.dp))
+            }
+        }
         content()
     }
 }
@@ -305,9 +317,9 @@ private fun WhatIsPinyinPage(onSpeak: (String) -> Unit) {
 
 @Composable
 private fun SyllablePart(label: String, color: Color, modifier: Modifier, sample: @Composable () -> Unit) {
-    Card(
+    PaperCard(
         modifier.fillMaxHeight(),
-        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.15f)),
+        colors = CardDefaults.cardColors(containerColor = lerp(Paper, color, 0.15f)),
         border = BorderStroke(1.5.dp, color),
     ) {
         Column(
@@ -328,7 +340,7 @@ private fun PartLetter(text: String, color: Color) {
 /** A word on rice paper with a speak button. */
 @Composable
 private fun ExampleCard(hanzi: String, pinyin: String, thai: String, onSpeak: (String) -> Unit) {
-    Card(
+    PaperCard(
         Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Cream, contentColor = Ink),
         border = BorderStroke(1.5.dp, Gold),
@@ -406,9 +418,9 @@ private fun SoundChip(sound: PinyinBasics.Sound, onSpeak: (String) -> Unit, modi
 
 @Composable
 private fun NotesCard(title: String, notes: List<String>) {
-    Card(
+    PaperCard(
         Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        colors = CardDefaults.cardColors(containerColor = Paper),
     ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("💡 $title", fontWeight = FontWeight.Bold)
@@ -435,7 +447,7 @@ private fun TonesPage(onSpeak: (String, Boolean) -> Unit) {
         subtitle = "ภาษาจีนกลางมี 4 เสียงกับเสียงเบา พยางค์เดียวกันแต่เสียงต่างกัน ความหมายก็เปลี่ยน แตะเพื่อฟัง",
     ) {
         PinyinBasics.tones.forEach { ToneCard(it, onSpeak = { hanzi -> onSpeak(hanzi, false) }) }
-        Card(
+        PaperCard(
             Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Cream, contentColor = Ink),
             border = BorderStroke(1.5.dp, Gold),
@@ -528,7 +540,7 @@ private fun ToneChangesPage(onSpeak: (String) -> Unit) {
         subtitle = "บางคำเขียนอย่างหนึ่งแต่อ่านอีกอย่างเมื่ออยู่ติดกับคำอื่น พินอินในเกมเขียนตามรูปเดิม แต่เสียงอ่านจะเปลี่ยนตามกฎนี้",
     ) {
         PinyinBasics.toneChanges.forEach { change ->
-            Card(Modifier.fillMaxWidth()) {
+            PaperCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(change.titleTh, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Text(change.ruleTh, style = MaterialTheme.typography.bodyMedium)
@@ -641,7 +653,7 @@ private fun ToneOption(tone: Int, right: Boolean, wrong: Boolean, onClick: () ->
         when {
             right -> Correct
             wrong -> Wrong
-            else -> MaterialTheme.colorScheme.surfaceContainerHigh
+            else -> Paper
         },
         label = "tone$tone",
     )
@@ -673,7 +685,11 @@ private fun QuizDone(quiz: ToneQuizState, firstRun: Boolean, onRestart: () -> Un
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(if (quiz.perfect) "🎉" else "👍", fontSize = 64.sp, modifier = Modifier.appear())
+        Image(
+            painterResource(if (quiz.perfect) R.drawable.mascot_cheer else R.drawable.mascot_thumbs),
+            contentDescription = null,
+            modifier = Modifier.size(140.dp).appear(),
+        )
         Text(
             "ตอบถูกตั้งแต่ครั้งแรก ${quiz.firstTryCorrect}/${quiz.questions.size} ข้อ",
             style = MaterialTheme.typography.titleLarge,

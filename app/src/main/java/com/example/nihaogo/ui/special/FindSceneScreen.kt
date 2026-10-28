@@ -1,5 +1,6 @@
 package com.example.nihaogo.ui.special
 
+import com.example.nihaogo.ui.theme.Paper
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.ui.common.appear
 import com.example.nihaogo.ui.common.pop
 import com.example.nihaogo.ui.theme.Cream
@@ -207,7 +209,7 @@ fun FindSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
                     when {
                         wrong -> Wrong.copy(alpha = 0.5f)
                         found -> Correct.copy(alpha = 0.3f)
-                        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+                        else -> Paper
                     },
                     label = "item",
                 )

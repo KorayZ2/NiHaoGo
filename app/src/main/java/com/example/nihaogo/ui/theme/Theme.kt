@@ -1,10 +1,13 @@
 package com.example.nihaogo.ui.theme
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
 private val DarkColorScheme = darkColorScheme(
     primary = RedDark,
@@ -35,17 +38,30 @@ private val LightColorScheme = lightColorScheme(
     onTertiary = Color.White,
     background = Cream,
     onBackground = Ink,
-    surface = Cream,
+    surface = Paper,
     onSurface = Ink,
-    primaryContainer = Color(0xFFFFDADC),
-    secondaryContainer = Color(0xFFFFEBC2),
+    onSurfaceVariant = InkSoft,
+    primaryContainer = Color(0xFFFDE3DA),
+    onPrimaryContainer = RedDeep,
+    secondaryContainer = Color(0xFFFDEBC8),
     tertiaryContainer = Color(0xFFC9F0EA),
-    surfaceVariant = Color(0xFFFFEFD9),
+    surfaceVariant = Color(0xFFFCEEDD),
+    outline = Color(0xFFD9BFA0),
+    outlineVariant = Hairline,
     surfaceContainerLowest = Color.White,
-    surfaceContainerLow = Color(0xFFFFF3E3),
-    surfaceContainer = Color(0xFFFFEFD9),
-    surfaceContainerHigh = Color(0xFFFFE7C7),
-    surfaceContainerHighest = Color(0xFFFFE1B8),
+    surfaceContainerLow = Color(0xFFFFF9F1),
+    surfaceContainer = Color(0xFFFEF4E8),
+    surfaceContainerHigh = Color(0xFFFDF0E1),
+    surfaceContainerHighest = Color(0xFFFCEBD7),
+)
+
+// Soft, rounded corners everywhere, with pill-shaped buttons (see GameButton).
+private val AppShapes = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(22.dp),
+    extraLarge = RoundedCornerShape(28.dp),
 )
 
 @Composable
@@ -58,6 +74,7 @@ fun NiHaoGoTheme(
     MaterialTheme(
         colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
         typography = Typography,
+        shapes = AppShapes,
         content = content
     )
 }

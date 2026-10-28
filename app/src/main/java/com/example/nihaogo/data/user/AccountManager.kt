@@ -4,9 +4,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 
 /**
- * Google sign-in and sign-out on top of [AuthRepository], keeping local progress and Firestore in step.
+ * Google and email sign-in, and sign-out, on top of [AuthRepository], keeping local progress and Firestore in step.
  *
- * When the Google account already has progress from another device and this device has guest
+ * When the account already has progress from another device and this device has guest
  * progress too, the player picks which one to keep ([SignInResult.NeedsChoice] → [resolveConflict]).
  * Syncing stays paused until then so neither side is overwritten early.
  */
@@ -28,10 +28,21 @@ class AccountManager(
         }
     }
 
-    suspend fun signInWithGoogle(idToken: String): SignInResult {
+    suspend fun signInWithGoogle(idToken: String): SignInResult = signIn { auth.signInWithGoogle(idToken) }
+
+    suspend fun signInWithEmail(email: String, password: String): SignInResult =
+        signIn { auth.signInWithEmail(email, password) }
+
+    /** A new email account; a guest keeps its progress, as with Google. */
+    suspend fun createEmailAccount(email: String, password: String): SignInResult =
+        signIn { auth.createEmailAccount(email, password) }
+
+    suspend fun sendPasswordReset(email: String) = auth.sendPasswordReset(email)
+
+    private suspend fun signIn(call: suspend () -> AuthRepository.SignInOutcome): SignInResult {
         sync.pause()
         val result = try {
-            decide(auth.signInWithGoogle(idToken))
+            decide(call())
         } catch (e: Exception) {
             sync.resume()
             throw e
@@ -40,8 +51,8 @@ class AccountManager(
         return result
     }
 
-    private suspend fun decide(result: AuthRepository.GoogleResult): SignInResult {
-        if (result !is AuthRepository.GoogleResult.Switched) return SignInResult.Done
+    private suspend fun decide(result: AuthRepository.SignInOutcome): SignInResult {
+        if (result !is AuthRepository.SignInOutcome.Switched) return SignInResult.Done
 
         val remote = try {
             sync.fetch(result.uid)
@@ -68,11 +79,21 @@ class AccountManager(
         sync.resume()
     }
 
-    /** Signs out of Google; this device starts over as a new guest. The account keeps its progress. */
+    /** Signs out; this device starts over as a new guest. The account keeps its progress. */
     suspend fun signOut() {
         sync.pause()
         local.update { UserProgress(devUnlockAll = it.devUnlockAll) }
         auth.signOut()
         sync.resume()
+    }
+
+    /**
+     * Debug builds only: like [signOut] but also drops the debug unlock, so the next launch is a
+     * brand-new guest. Syncing stays paused because the app restarts right after.
+     */
+    suspend fun resetAsNewUser() {
+        sync.pause()
+        local.update { UserProgress() }
+        auth.signOut()
     }
 }

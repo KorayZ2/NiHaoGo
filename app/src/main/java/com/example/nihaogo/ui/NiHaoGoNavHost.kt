@@ -33,7 +33,12 @@ import com.example.nihaogo.ui.intro.PinyinIntroScreen
 import com.example.nihaogo.ui.lesson.ListeningStepScreen
 import com.example.nihaogo.ui.lesson.SentenceStepScreen
 import com.example.nihaogo.ui.lesson.VocabStepScreen
-import com.example.nihaogo.ui.profile.ProfileScreen
+import com.example.nihaogo.ui.login.LoginScreen
+import com.example.nihaogo.ui.missions.DailyMissionsScreen
+import com.example.nihaogo.ui.practice.ChallengeGameScreen
+import com.example.nihaogo.ui.practice.ExerciseScreen
+import com.example.nihaogo.ui.practice.ListenSpeakScreen
+import com.example.nihaogo.ui.words.WordListScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -42,8 +47,24 @@ object CoverRoute
 @Serializable
 object HomeRoute
 
+/** Sign-in page; [firstRun]: shown by itself after the cover, rather than opened from the profile. */
 @Serializable
-object ProfileRoute
+data class LoginRoute(val firstRun: Boolean)
+
+@Serializable
+object MissionsRoute
+
+/** Word-and-picture matching game over the opened categories' words. */
+@Serializable
+object ChallengeRoute
+
+/** Ten multiple-choice questions over the opened categories' words. */
+@Serializable
+object ExerciseRoute
+
+/** Hear a word, then say it back. */
+@Serializable
+object ListenSpeakRoute
 
 /** [firstRun]: shown by itself after the cover, rather than opened again from the profile. */
 @Serializable
@@ -51,6 +72,10 @@ data class PinyinIntroRoute(val firstRun: Boolean)
 
 @Serializable
 data class CategoryRoute(val categoryId: String)
+
+/** Word list; [categoryId] null shows every opened category. */
+@Serializable
+data class WordListRoute(val categoryId: String? = null)
 
 @Serializable
 data class StepRoute(val categoryId: String, val step: Step)
@@ -88,9 +113,26 @@ fun NiHaoGoNavHost() {
             CoverScreen(onDone = {
                 // Guard against a tap and the timer both firing.
                 if (nav.currentDestination?.hasRoute<CoverRoute>() == true) {
-                    // A new player learns pinyin and tones before the map.
-                    val next: Any = if (settings.pinyinIntroSeen) HomeRoute else PinyinIntroRoute(firstRun = true)
+                    // A new player is offered sign-in, then learns pinyin and tones before the map.
+                    val next: Any = when {
+                        !settings.loginSeen -> LoginRoute(firstRun = true)
+                        !settings.pinyinIntroSeen -> PinyinIntroRoute(firstRun = true)
+                        else -> HomeRoute
+                    }
                     nav.navigate(next) { popUpTo<CoverRoute> { inclusive = true } }
+                }
+            })
+        }
+        composable<LoginRoute> { entry ->
+            val route = entry.toRoute<LoginRoute>()
+            LoginScreen(firstRun = route.firstRun, onDone = {
+                if (nav.currentDestination?.hasRoute<LoginRoute>() != true) return@LoginScreen
+                settings.loginSeen = true
+                if (route.firstRun) {
+                    val next: Any = if (settings.pinyinIntroSeen) HomeRoute else PinyinIntroRoute(firstRun = true)
+                    nav.navigate(next) { popUpTo<LoginRoute> { inclusive = true } }
+                } else {
+                    nav.popBackStack()
                 }
             })
         }
@@ -108,19 +150,33 @@ fun NiHaoGoNavHost() {
         composable<HomeRoute> {
             HomeScreen(
                 onOpenCategory = { nav.navigate(CategoryRoute(it)) },
+                onOpenPinyin = { nav.navigate(PinyinIntroRoute(firstRun = false)) },
+                onOpenWords = { nav.navigate(WordListRoute()) },
+                onOpenListenSpeak = { nav.navigate(ListenSpeakRoute) },
+                onOpenExercise = { nav.navigate(ExerciseRoute) },
+                onOpenChallenge = { nav.navigate(ChallengeRoute) },
+                onOpenMissions = { nav.navigate(MissionsRoute) },
                 onOpenMode = { modeId ->
                     // The first time in, the case is told before its scenes are shown.
                     val firstVisit = hasCaseIntro(modeId) && !settings.caseIntroSeen(modeId)
                     nav.navigate(if (firstVisit) CaseIntroRoute(modeId, firstRun = true) else ModeRoute(modeId))
                 },
-                onOpenProfile = { nav.navigate(ProfileRoute) },
+                onOpenLogin = { nav.navigate(LoginRoute(firstRun = false)) },
             )
         }
-        composable<ProfileRoute> {
-            ProfileScreen(
+        composable<MissionsRoute> {
+            DailyMissionsScreen(
                 onBack = { nav.popBackStack() },
-                onOpenPinyin = { nav.navigate(PinyinIntroRoute(firstRun = false)) },
+                onOpenLesson = { categoryId -> nav.navigate(CategoryRoute(categoryId)) },
+                onOpenListenSpeak = { nav.navigate(ListenSpeakRoute) },
+                onOpenExercise = { nav.navigate(ExerciseRoute) },
             )
+        }
+        composable<ChallengeRoute> { ChallengeGameScreen(onBack = { nav.popBackStack() }) }
+        composable<ExerciseRoute> { ExerciseScreen(onBack = { nav.popBackStack() }) }
+        composable<ListenSpeakRoute> { ListenSpeakScreen(onBack = { nav.popBackStack() }) }
+        composable<WordListRoute> { entry ->
+            WordListScreen(initialCategoryId = entry.toRoute<WordListRoute>().categoryId, onBack = { nav.popBackStack() })
         }
         composable<ModeRoute> { entry ->
             val route = entry.toRoute<ModeRoute>()
@@ -162,6 +218,7 @@ fun NiHaoGoNavHost() {
                 categoryId = route.categoryId,
                 onBack = { nav.popBackStack() },
                 onOpenStep = { step -> nav.navigate(StepRoute(route.categoryId, step)) },
+                onOpenWords = { nav.navigate(WordListRoute(route.categoryId)) },
             )
         }
         composable<StepRoute> { entry ->

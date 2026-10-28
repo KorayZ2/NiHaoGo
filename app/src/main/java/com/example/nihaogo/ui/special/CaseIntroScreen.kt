@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.data.content.SpecialMode
 import com.example.nihaogo.data.content.Suspect
@@ -377,7 +378,7 @@ private fun MeetHint(met: Int, total: Int) {
 @Composable
 private fun IntroBubble(suspect: Suspect, onReplay: () -> Unit) {
     val line = suspect.intro ?: return
-    Card(
+    PaperCard(
         Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Cream, contentColor = Ink),
         border = BorderStroke(2.dp, Gold),

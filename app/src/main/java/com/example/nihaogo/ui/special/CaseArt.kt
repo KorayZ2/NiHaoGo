@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.R
 import com.example.nihaogo.data.content.Line
 import com.example.nihaogo.data.content.SpecialMode
@@ -220,7 +221,7 @@ internal fun PaintedProgressBar(done: Int, total: Int, onBack: () -> Unit) {
 /** A new clue over a painting, popping in. */
 @Composable
 internal fun PaintedClueCard(clue: String, modifier: Modifier = Modifier) {
-    Card(
+    PaperCard(
         modifier.fillMaxWidth().appear().pop(true, amount = 0.05f),
         colors = CardDefaults.cardColors(containerColor = Cream, contentColor = Ink),
         border = BorderStroke(2.dp, Gold),
@@ -316,7 +317,7 @@ internal fun CaseClosed(
                     )
                 }
                 mode.confession?.let { line ->
-                    Card(
+                    PaperCard(
                         Modifier.fillMaxWidth().appear(200),
                         colors = CardDefaults.cardColors(containerColor = Cream, contentColor = Ink),
                         border = BorderStroke(2.dp, Gold),

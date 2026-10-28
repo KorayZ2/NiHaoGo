@@ -1,5 +1,8 @@
 package com.example.nihaogo.ui.special
 
+import androidx.compose.foundation.BorderStroke
+import com.example.nihaogo.ui.theme.Gold
+import com.example.nihaogo.ui.theme.Paper
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
@@ -16,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.data.content.Scene
 import com.example.nihaogo.data.user.GameRules
@@ -182,9 +185,9 @@ private fun Learn(vm: TrainingSceneViewModel, state: TrainingState) {
         transitionSpec = { (slideInHorizontally { it / 2 } + fadeIn()) togetherWith (slideOutHorizontally { -it / 2 } + fadeOut()) },
         label = "trainingWord",
     ) { shown ->
-        Card(Modifier.fillMaxWidth()) {
+        PaperCard(Modifier.fillMaxWidth(), border = BorderStroke(2.dp, Gold)) {
             Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(shown.emoji, fontSize = 72.sp)
+                Text(shown.emoji, fontSize = 64.sp)
                 HanziBlock(shown.hanzi, shown.pinyin, shown.thai, hanziSize = 44)
             }
         }
@@ -233,7 +236,7 @@ private fun Quiz(vm: TrainingSceneViewModel, state: TrainingState) {
                     when {
                         right -> Correct.copy(alpha = 0.35f)
                         wrong -> Wrong.copy(alpha = 0.35f)
-                        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+                        else -> Paper
                     },
                     label = "choice",
                 )

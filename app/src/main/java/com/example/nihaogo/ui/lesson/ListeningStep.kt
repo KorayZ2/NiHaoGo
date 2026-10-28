@@ -25,10 +25,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.nihaogo.AppContainer
+import com.example.nihaogo.R
 import com.example.nihaogo.data.content.ListeningItem
 import com.example.nihaogo.data.content.Step
 import com.example.nihaogo.data.user.GameRules
+import com.example.nihaogo.data.user.Mission
+import com.example.nihaogo.ui.common.AnswerOption
 import com.example.nihaogo.ui.common.GameButton
+import com.example.nihaogo.ui.common.Mascot
+import com.example.nihaogo.ui.common.PaperCard
+import com.example.nihaogo.ui.common.PromptCard
 import com.example.nihaogo.ui.common.GameCard
 import com.example.nihaogo.ui.common.GameTopBar
 import com.example.nihaogo.ui.common.HanziBlock
@@ -96,6 +102,7 @@ class ListeningViewModel(private val container: AppContainer, private val catego
                 val score = s.firstTryCorrect * 100 / items.size
                 val stars = GameRules.starsForScore(score)
                 val outcome = container.progress.recordStep(categoryId, Step.Listening, stars)
+                if (stars > 0) container.missions.add(Mission.Lesson)
                 _state.update { it.copy(result = StepResult(score, stars, outcome.coinsEarned)) }
             }
         }
@@ -135,39 +142,40 @@ fun ListeningStepScreen(categoryId: String, onBack: () -> Unit) {
         ) {
             ProgressHeader(state.index + 1, vm.items.size)
             TtsWarning(speakerState)
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-            ) {
-                SpeakButton(onClick = { vm.play() })
-                SpeakButton(onClick = { vm.play(slow = true) }, slow = true)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Mascot(if (state.solved) R.drawable.mascot_cheer else R.drawable.mascot_listen, size = 100.dp)
+                PromptCard("ฟังเสียงแล้วตอบคำถาม", Modifier.padding(start = 8.dp)) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                    ) {
+                        SpeakButton(onClick = { vm.play() })
+                        SpeakButton(onClick = { vm.play(slow = true) }, slow = true)
+                    }
+                }
             }
             if (state.showText) {
-                HanziBlock(item.hanzi, item.pinyin, item.thai, Modifier.fillMaxWidth(), hanziSize = 32)
+                PaperCard(Modifier.fillMaxWidth()) {
+                    HanziBlock(item.hanzi, item.pinyin, item.thai, Modifier.fillMaxWidth().padding(12.dp), hanziSize = 32)
+                }
             } else {
                 TextButton(onClick = vm::toggleText, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                     Text("ฟังไม่ทัน? แสดงตัวอักษร")
                 }
             }
-            Text(item.questionTh, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(
+                "ข้อ ${state.index + 1}. ${item.questionTh}",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
             item.options.forEachIndexed { i, option ->
-                val right = state.solved && i == item.answer
-                val wrong = i in state.tried && i != item.answer
-                val color by animateColorAsState(
-                    when {
-                        right -> Correct
-                        wrong -> Wrong
-                        else -> MaterialTheme.colorScheme.surfaceContainerHigh
-                    },
-                    label = "option$i",
-                )
-                GameCard(
+                AnswerOption(
+                    index = i,
+                    right = state.solved && i == item.answer,
+                    wrong = i in state.tried && i != item.answer,
                     onClick = { vm.choose(i) },
-                    sound = false,
-                    modifier = Modifier.fillMaxWidth().answerFeedback(right, wrong),
-                    colors = CardDefaults.cardColors(containerColor = color),
                 ) {
-                    PinyinText(option, modifier = Modifier.padding(16.dp), fontSize = 20.sp)
+                    PinyinText(option, fontSize = 20.sp)
                 }
             }
             if (state.solved) {

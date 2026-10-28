@@ -1,5 +1,20 @@
 package com.example.nihaogo.ui.special
 
+import com.example.nihaogo.ui.theme.Red
+import com.example.nihaogo.ui.theme.Cream
+import com.example.nihaogo.R
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import com.example.nihaogo.ui.theme.Gold
+import androidx.compose.foundation.BorderStroke
+import com.example.nihaogo.ui.theme.Paper
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,7 +26,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
@@ -35,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.audio.Sfx
 import com.example.nihaogo.data.content.ModeKind
@@ -119,7 +134,7 @@ fun ModeScreen(modeId: String, onBack: () -> Unit, onOpenScene: (Int) -> Unit, o
                     }
                     if (SpecialRules.isFinished(mode, progress)) {
                         item {
-                            Card(colors = CardDefaults.cardColors(containerColor = Correct.copy(alpha = 0.2f))) {
+                            PaperCard(colors = CardDefaults.cardColors(containerColor = lerp(Paper, Correct, 0.2f))) {
                                 endingArt(mode.id)?.let { art ->
                                     // Square from the middle of the painting: everyone around the cake.
                                     Image(
@@ -155,12 +170,23 @@ fun ModeScreen(modeId: String, onBack: () -> Unit, onOpenScene: (Int) -> Unit, o
 
 @Composable
 private fun ModeHeader(mode: SpecialMode) {
-    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)) {
-        Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(mode.emoji, fontSize = 64.sp)
-            PinyinText(mode.titleZh, pinyin = mode.titlePinyin, fontSize = 30.sp, fontWeight = FontWeight.Bold)
-            Text(mode.titleTh, fontWeight = FontWeight.Bold)
-            Text(mode.introTh, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
+    PaperCard(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer), border = BorderStroke(1.5.dp, Gold)) {
+        Row(Modifier.fillMaxWidth().padding(start = 16.dp, top = 14.dp, bottom = 14.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "${mode.emoji}  " + if (mode.kind == ModeKind.Detective) "นักสืบ" else "อาชีพในฝัน",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Red,
+                )
+                PinyinText(mode.titleZh, pinyin = mode.titlePinyin, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                Text(mode.titleTh, fontWeight = FontWeight.Bold)
+                Text(mode.introTh, style = MaterialTheme.typography.bodyMedium)
+            }
+            Image(
+                painterResource(if (mode.kind == ModeKind.Detective) R.drawable.mascot_detective else R.drawable.mascot_scholar),
+                contentDescription = null,
+                modifier = Modifier.size(104.dp),
+            )
         }
     }
 }
@@ -168,7 +194,7 @@ private fun ModeHeader(mode: SpecialMode) {
 @Composable
 private fun RankLadder(mode: SpecialMode, progress: UserProgress) {
     val done = SpecialRules.scenesDone(mode, progress)
-    Card(Modifier.fillMaxWidth()) {
+    PaperCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 "🎖️ ตำแหน่งปัจจุบัน: ${SpecialRules.rank(mode, progress) ?: "ผู้สมัครใหม่"}",
@@ -191,9 +217,9 @@ private fun SuspectsRow(mode: SpecialMode) {
         Text("ผู้ต้องสงสัย", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             mode.suspects.forEach { s ->
-                Card(Modifier.weight(1f)) {
+                PaperCard(Modifier.weight(1f)) {
                     Column(Modifier.fillMaxWidth().padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(s.emoji, fontSize = 36.sp)
+                        EmojiFrame(s.emoji, 52.dp, CircleShape)
                         PinyinText(s.name, pinyin = s.namePinyin, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                         Text(s.roleTh, style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center)
                     }
@@ -225,12 +251,12 @@ private fun SceneCard(index: Int, scene: Scene, state: SceneState, stars: Int, o
             .fillMaxWidth()
             .pop(wasForSale && open, amount = 0.06f)
             .alpha(if (state == SceneState.Locked) 0.5f else 1f),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
     ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(if (state == SceneState.Locked) "🔒" else scene.emoji, fontSize = 36.sp)
+        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            EmojiFrame(if (state == SceneState.Locked) "🔒" else scene.emoji, 56.dp, MaterialTheme.shapes.medium)
             Column(Modifier.padding(start = 12.dp).weight(1f)) {
-                Text("${index + 1}. ${scene.titleTh}", fontWeight = FontWeight.Bold)
+                Text("ฉากที่ ${index + 1}", style = MaterialTheme.typography.labelMedium, color = Red, fontWeight = FontWeight.Bold)
+                Text(scene.titleTh, fontWeight = FontWeight.Bold)
                 PinyinText(scene.titleZh, pinyin = scene.titlePinyin, style = MaterialTheme.typography.bodySmall)
                 Text(
                     when (state) {
@@ -246,6 +272,15 @@ private fun SceneCard(index: Int, scene: Scene, state: SceneState, stars: Int, o
             }
         }
     }
+}
+
+/** An emoji on cream inside a thin gold frame. */
+@Composable
+private fun EmojiFrame(emoji: String, size: Dp, shape: Shape) {
+    Box(
+        Modifier.size(size).clip(shape).background(Cream).border(1.dp, Gold.copy(alpha = 0.6f), shape),
+        contentAlignment = Alignment.Center,
+    ) { Text(emoji, fontSize = (size.value * 0.55f).sp) }
 }
 
 /** Short progress text for the home-screen card. */

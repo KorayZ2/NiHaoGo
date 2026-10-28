@@ -1,5 +1,6 @@
 package com.example.nihaogo.ui.special
 
+import com.example.nihaogo.ui.theme.Paper
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
@@ -21,7 +22,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.example.nihaogo.ui.common.PaperCard
 import com.example.nihaogo.AppContainer
 import com.example.nihaogo.data.content.Line
 import com.example.nihaogo.data.content.Scene
@@ -263,7 +264,7 @@ fun InterrogateSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
             }
             state.error?.let { error ->
                 item {
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
+                    PaperCard(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
                         Column(Modifier.padding(12.dp)) {
                             Text(error, color = MaterialTheme.colorScheme.onErrorContainer)
                             TextButton(onClick = vm::retryFailed) { Text("ลองใหม่") }
@@ -303,7 +304,7 @@ fun InterrogateSceneScreen(modeId: String, index: Int, onBack: () -> Unit) {
 @Composable
 private fun CaseHeader(vm: InterrogateSceneViewModel, state: InterrogateState) {
     val need = vm.scene.requiredQuestions
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)) {
+    PaperCard(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer), border = BorderStroke(1.5.dp, Gold)) {
         Column(Modifier.fillMaxWidth().padding(16.dp)) {
             Text("🕵️ สอบปากคำผู้ต้องสงสัย", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
             Text(
@@ -326,7 +327,7 @@ private fun SuspectPicker(vm: InterrogateSceneViewModel, state: InterrogateState
                 modifier = Modifier.weight(1f).pop(selected, amount = 0.05f),
                 border = if (selected) BorderStroke(3.dp, Gold) else null,
                 colors = CardDefaults.cardColors(
-                    containerColor = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = if (selected) MaterialTheme.colorScheme.secondary else Paper,
                 ),
             ) {
                 Row(Modifier.fillMaxWidth().padding(6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -403,7 +404,7 @@ private fun Solved(vm: InterrogateSceneViewModel, modifier: Modifier = Modifier)
             modifier = Modifier.pop(true, amount = 0.12f),
         )
         vm.mode.confession?.let { SuspectLine(culprit, it, onSpeak = { vm.speak(it.hanzi, voice = culprit.voice) }) }
-        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)) {
+        PaperCard(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer), border = BorderStroke(1.5.dp, Gold)) {
             Text(vm.mode.endingTh, modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.bodyLarge)
         }
         GameButton(onClick = vm::complete, modifier = Modifier.fillMaxWidth()) { Text("ปิดคดี ดูผลลัพธ์ 📁") }
